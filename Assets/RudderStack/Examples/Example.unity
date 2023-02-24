@@ -721,6 +721,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6940871710492531969, guid: e6aaab33b9e1cb048b025890faf86a7f, type: 3}
+      propertyPath: m_text
+      value: "4\u200B"
+      objectReference: {fileID: 0}
     - target: {fileID: 8406540375973614004, guid: e6aaab33b9e1cb048b025890faf86a7f, type: 3}
       propertyPath: m_Name
       value: Text&Input (Property Value)
@@ -847,6 +851,10 @@ PrefabInstance:
     - target: {fileID: 1353149071170301724, guid: e6aaab33b9e1cb048b025890faf86a7f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6940871710492531969, guid: e6aaab33b9e1cb048b025890faf86a7f, type: 3}
+      propertyPath: m_text
+      value: "Tester\u200B"
       objectReference: {fileID: 0}
     - target: {fileID: 8406540375973614004, guid: e6aaab33b9e1cb048b025890faf86a7f, type: 3}
       propertyPath: m_Name
@@ -1001,6 +1009,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6940871710492531969, guid: e6aaab33b9e1cb048b025890faf86a7f, type: 3}
+      propertyPath: m_text
+      value: "A\u200B"
+      objectReference: {fileID: 0}
     - target: {fileID: 8406540375973614004, guid: e6aaab33b9e1cb048b025890faf86a7f, type: 3}
       propertyPath: m_Name
       value: Text&Input (Property Name)
@@ -1064,9 +1076,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: -672}
   m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0, y: 1}
+  m_Pivot: {x: 0, y: 0}
 --- !u!114 &644775677
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1136,7 +1148,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 1
-  m_VerticalAlignment: 256
+  m_VerticalAlignment: 1024
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -1425,7 +1437,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1096367826}
   - component: {fileID: 1096367825}
-  - component: {fileID: 1096367827}
   m_Layer: 0
   m_Name: RudderStack
   m_TagString: Untagged
@@ -1440,7 +1451,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1096367824}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5a72e0f9bcc87004f8e7d52011a0345d, type: 3}
   m_Name: 
@@ -1462,18 +1473,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1096367827
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1096367824}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 773bf241325d0d7469f33a4045637533, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1157291630
 GameObject:
   m_ObjectHideFlags: 0
@@ -1712,7 +1711,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 39188149}
   m_Direction: 2
   m_Value: 0
-  m_Size: 1
+  m_Size: 0.9998665
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -1991,6 +1990,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6940871710492531969, guid: e6aaab33b9e1cb048b025890faf86a7f, type: 3}
+      propertyPath: m_text
+      value: "TestTrack\u200B"
+      objectReference: {fileID: 0}
     - target: {fileID: 8406540375973614004, guid: e6aaab33b9e1cb048b025890faf86a7f, type: 3}
       propertyPath: m_Name
       value: Text&Input (Event Name)
@@ -2084,7 +2087,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1550478904}
   - component: {fileID: 1550478906}
-  - component: {fileID: 1550478905}
   m_Layer: 5
   m_Name: Content (Initialize)
   m_TagString: Untagged
@@ -2111,23 +2113,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 430.32, y: 0}
-  m_SizeDelta: {x: 860.64, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 175}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1550478905
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1550478903}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_HorizontalFit: 0
-  m_VerticalFit: 2
 --- !u!114 &1550478906
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2404,7 +2392,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1958905140}
   - component: {fileID: 1958905142}
-  - component: {fileID: 1958905141}
   m_Layer: 5
   m_Name: Content (Track)
   m_TagString: Untagged
@@ -2433,23 +2420,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 430.32, y: 0}
-  m_SizeDelta: {x: 860.64, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 375}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1958905141
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1958905139}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_HorizontalFit: 0
-  m_VerticalFit: 2
 --- !u!114 &1958905142
 MonoBehaviour:
   m_ObjectHideFlags: 0
