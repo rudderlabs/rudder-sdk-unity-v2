@@ -12,7 +12,7 @@ namespace RudderStack.Unity
             DontDestroyOnLoad(new GameObject("UnityMainThread").AddComponent<UnityMainThread>());
             if (!string.IsNullOrEmpty(dataPlaneUrl) && !string.IsNullOrEmpty(writeKey))
             {
-                RsAnalytics.Initialize(writeKey, new RsConfig(dataPlaneUrl: dataPlaneUrl).SetAutoCollectAdvertId(true));
+                RSAnalytics.Initialize(writeKey, new RSConfig(dataPlaneUrl: dataPlaneUrl).SetAutoCollectAdvertId(true));
             }
         }
     }

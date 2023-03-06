@@ -6,7 +6,7 @@ using RudderStack.Stats;
 
 namespace RudderStack.Unity
 {
-    public class RsClient : IRudderAnalyticsClient
+    public class RSClient : IRudderAnalyticsClient
     {
         private string _advertisingId;
         private string _deviceToken;
@@ -31,17 +31,17 @@ namespace RudderStack.Unity
             remove => Inner.Succeeded -= value;
         }
 
-        public RsClient(RudderClient innerClient)
+        public RSClient(RudderClient innerClient)
         {
             Inner = innerClient;
         }
 
-        public RsClient(string writeKey)
+        public RSClient(string writeKey)
         {
-            Inner = new RudderClient(writeKey, new RsConfig());
+            Inner = new RudderClient(writeKey, new RSConfig());
         }
 
-        public RsClient(string writeKey, RsConfig config)
+        public RSClient(string writeKey, RSConfig config)
         {
             Inner = new RudderClient(writeKey, config);
         }
@@ -51,9 +51,9 @@ namespace RudderStack.Unity
             get => Inner.WriteKey;
         }
 
-        public RsConfig Config
+        public RSConfig Config
         {
-            get => Inner.Config as RsConfig;
+            get => Inner.Config as RSConfig;
         }
 
         RudderConfig IRudderAnalyticsClient.Config

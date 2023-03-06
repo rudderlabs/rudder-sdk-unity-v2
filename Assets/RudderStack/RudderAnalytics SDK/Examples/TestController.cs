@@ -29,13 +29,13 @@ namespace Examples.RudderStack
 
         public void Initialize()
         {
-            RsAnalytics.Initialize(writeKey.text, new RsConfig(dataPlaneUrl.text));
+            RSAnalytics.Initialize(writeKey.text, new RSConfig(dataPlaneUrl.text));
             CustomLogger.LoggingHandler(Logger.Level.INFO, "RudderAnalytics Initialized", null);
         }
 
         public void Track()
         {
-            RsAnalytics.Client.Track(
+            RSAnalytics.Client.Track(
                 userID.text,
                 eventName.text,
                 new Dictionary<string, object> { { propertyType.text, propertyValue.text }, }
@@ -47,8 +47,8 @@ namespace Examples.RudderStack
             var token = deviceToken.text;
             var id    = advertisementId.text;
             
-            RsAnalytics.Client.PutAdvertisingId(id);
-            RsAnalytics.Client.PutDeviceToken(token);
+            RSAnalytics.Client.PutAdvertisingId(id);
+            RSAnalytics.Client.PutDeviceToken(token);
         }
     }
 }

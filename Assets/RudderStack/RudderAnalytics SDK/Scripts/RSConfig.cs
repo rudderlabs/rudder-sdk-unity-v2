@@ -2,11 +2,12 @@ using System;
 
 namespace RudderStack.Unity
 {
-    public class RsConfig : RudderConfig
+    public class RSConfig : RudderConfig
     {
         private bool autoCollectAdvertId;
 
-        public RsConfig(
+        public RSConfig
+        (
             string    dataPlaneUrl        = "https://hosted.rudderlabs.com",
             string    proxy               = null,
             TimeSpan? timeout             = null,
@@ -26,7 +27,7 @@ namespace RudderStack.Unity
             this.autoCollectAdvertId = autoCollectAdvertId;
         }
 
-        public RsConfig SetAutoCollectAdvertId(bool newSendStatus)
+        public RSConfig SetAutoCollectAdvertId(bool newSendStatus)
         {
             autoCollectAdvertId = newSendStatus;
             return this;

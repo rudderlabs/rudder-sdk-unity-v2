@@ -1,15 +1,15 @@
 namespace RudderStack.Unity
 {
-    public class RsAnalytics
+    public class RSAnalytics
     {
         public static string VERSION
         {
             get => RudderAnalytics.VERSION;
         }
 
-        public static RsClient Client
+        public static RSClient Client
         {
-            get => new RsClient(RudderAnalytics.Client);
+            get => new RSClient(RudderAnalytics.Client);
         }
 
         public static void Initialize(string writeKey)
@@ -17,12 +17,12 @@ namespace RudderStack.Unity
             RudderAnalytics.Initialize(writeKey);
         }
 
-        public static void Initialize(string writeKey, RsConfig config)
+        public static void Initialize(string writeKey, RSConfig config)
         {
             RudderAnalytics.Initialize(writeKey, config);
         }
 
-        public static void Initialize(RsClient client)
+        public static void Initialize(RSClient client)
         {
             RudderAnalytics.Initialize(client.Inner);
         }
