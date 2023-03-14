@@ -8,11 +8,7 @@ namespace RudderStack.Unity
         public static RSClient Client
         {
             get => _client;
-            private set 
-            {
-                if(_client != null) return;
-                _client = value;
-            }
+            private set => _client ??= value;
         }
 
         public static void Initialize(string writeKey)
