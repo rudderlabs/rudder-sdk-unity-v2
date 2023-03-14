@@ -1220,7 +1220,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -490}
+  m_AnchoredPosition: {x: 0, y: -489.99997}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &644775677
@@ -2968,6 +2968,14 @@ PrefabInstance:
     - target: {fileID: 3017308996314436817, guid: 4f0c6a1ced628a54a8797c53c8f7a68d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017308996314436818, guid: 4f0c6a1ced628a54a8797c53c8f7a68d, type: 3}
+      propertyPath: writeKey
+      value: 2LBHH1KlfkC6MYGnKw2ag7agwqp
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017308996314436818, guid: 4f0c6a1ced628a54a8797c53c8f7a68d, type: 3}
+      propertyPath: dataPlaneUrl
+      value: https://lumighosttdzw.dataplane.rudderstack.com
       objectReference: {fileID: 0}
     - target: {fileID: 3017308996314436819, guid: 4f0c6a1ced628a54a8797c53c8f7a68d, type: 3}
       propertyPath: m_Name
