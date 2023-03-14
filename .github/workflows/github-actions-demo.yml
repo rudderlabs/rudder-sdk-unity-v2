@@ -12,7 +12,7 @@ jobs:
 
     - run: mkdir a
 
-    - uses: pCYSl5EDgo/create-unitypackage@v1.1.1
+    - uses: pCYSl5EDgo/create-unitypackage@v1
       with:
         package-path: 'a/output.unitypackage'
         include-files: metaList
