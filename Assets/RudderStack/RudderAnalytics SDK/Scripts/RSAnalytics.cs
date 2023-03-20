@@ -4,7 +4,7 @@ namespace RudderStack.Unity
     {
         private static RSClient _client;
         public static string VERSION => RudderAnalytics.VERSION;
-
+        
         public static RSClient Client
         {
             get => _client;
@@ -32,6 +32,7 @@ namespace RudderStack.Unity
         public static void Dispose()
         {
             RudderAnalytics.Dispose();
+            Client.Dispose();
         }
     }
 }

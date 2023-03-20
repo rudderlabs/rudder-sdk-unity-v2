@@ -1,12 +1,7 @@
-using System;
 using System.Collections.Generic;
-using System.Net;
-using System.Net.NetworkInformation;
-using System.Threading;
 using System.Threading.Tasks;
 using RudderStack.Model;
 using RudderStack.Stats;
-using RudderStack.Unity.Utility;
 
 namespace RudderStack.Unity
 {
@@ -14,11 +9,9 @@ namespace RudderStack.Unity
     {
         private string _advertisingId;
         private string _deviceToken;
-        private RSFailureRequestManager _storageManager;
-        public bool IsConnected { get; private set; }
-
-        public RudderClient Inner { get; }
         
+        public RudderClient Inner { get; }
+
         public Statistics Statistics
         {
             get => Inner.Statistics;
@@ -40,19 +33,16 @@ namespace RudderStack.Unity
         public RSClient(RudderClient innerClient)
         {
             Inner = innerClient;
-            _storageManager = new RSFailureRequestManager(this);
         }
         
         public RSClient(string writeKey)
         {
             Inner = new RudderClient(writeKey, new RSConfig());
-            _storageManager = new RSFailureRequestManager(this);
         }
 
         public RSClient(string writeKey, RSConfig config)
         {
             Inner = new RudderClient(writeKey, config);
-            _storageManager = new RSFailureRequestManager(this);
         }
 
         public string WriteKey
@@ -69,6 +59,9 @@ namespace RudderStack.Unity
         {
             get => Inner.Config;
         }
+
+        public void Enqueue(BaseAction baseAction) =>
+            Inner.Enqueue(baseAction);
 
         public void Identify(string userId, IDictionary<string, object> traits) =>
             Identify(userId, traits, new RudderOptions());
@@ -91,9 +84,7 @@ namespace RudderStack.Unity
             SetDeviceValues(options);
             Inner.Group(userId, groupId, traits, options);
         }
-        public void Track(Track track) =>
-            Track(track.UserId, track.EventName, track.Properties, track.ToOptions());
-        
+
         public void Track(string userId, string eventName) =>
             Track(userId, eventName, null, new RudderOptions());
 
@@ -177,12 +168,18 @@ namespace RudderStack.Unity
         private void SetDeviceValues(RudderOptions options)
         {
             if (Config.GetAutoCollectAdvertId())
-                options.Context.Add("device", new Dict
-                {
+            {
+                var value = new Dict {
                     { "token", _deviceToken },
                     { "adTrackingEnabled", true },
                     { "advertisingId", _advertisingId },
-                });
+                };
+                
+                if (options.Context.ContainsKey("device"))
+                    options.Context["device"] = value;
+                else
+                    options.Context.Add("device", value);
+            }
         }
 
         public void Flush() => Inner.Flush();

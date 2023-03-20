@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using RudderStack;
 
 namespace RudderStack.Unity
 {
