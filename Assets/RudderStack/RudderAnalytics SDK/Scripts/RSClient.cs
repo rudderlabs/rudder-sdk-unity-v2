@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using RudderStack.Model;
@@ -28,6 +29,12 @@ namespace RudderStack.Unity
         {
             add => Inner.Succeeded += value;
             remove => Inner.Succeeded -= value;
+        }
+        
+        public event EnqueuedHandler Enqueued
+        {
+            add => Inner.Enqueued += value;
+            remove => Inner.Enqueued -= value;
         }
 
         public RSClient(RudderClient innerClient)

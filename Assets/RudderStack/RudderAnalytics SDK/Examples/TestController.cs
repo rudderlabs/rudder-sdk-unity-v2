@@ -4,6 +4,7 @@ using RudderStack.Model;
 using RudderStack.Unity;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 using Logger = RudderStack.Logger;
 
@@ -49,6 +50,16 @@ namespace Examples.RudderStack
             
             RSAnalytics.Client.PutAdvertisingId(id);
             RSAnalytics.Client.PutDeviceToken(token);
+        }
+
+        public void SwitchScene()
+        {
+            SceneManager.LoadScene("RudderStack/RudderAnalytics SDK/Examples/Example 1");
+        }
+
+        public void SwitchBack()
+        {
+            SceneManager.LoadScene("RudderStack/RudderAnalytics SDK/Examples/Example");
         }
     }
 }

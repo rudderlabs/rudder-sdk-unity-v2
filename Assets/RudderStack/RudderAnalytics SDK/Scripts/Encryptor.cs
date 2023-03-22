@@ -11,7 +11,7 @@ namespace RudderStack.Unity.Utility
         {
             if (string.IsNullOrEmpty(plainText)) return plainText;
 
-            var iv = new byte[16];
+            var    iv = new byte[16];
             byte[] array;
 
             using (var aes = Aes.Create())

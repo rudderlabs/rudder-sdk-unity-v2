@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
 using RudderStack.Model;
@@ -14,13 +13,15 @@ using Screen = RudderStack.Model.Screen;
 
 namespace RudderStack.Unity
 {
-    public static class RSFailureRequestManager
+    public class RSFailureRequestManager : IDisposable
     {
-        private static bool   _running;
-        private static string _encryptionKey;
-        private static int    _timeBetweenAttempts;
+        private          bool   _running;
+        
+        private readonly string _encryptionKey;
+        private readonly int    _timeBetweenAttempts;
 
-        private static ConcurrentDictionary<string, BaseAction> _failedActions;
+        private readonly ConcurrentDictionary<string, BaseAction> _failedActions;
+        private readonly ConcurrentDictionary<string, BaseAction> _queuedActions;
 
         private static string DirectoryPath => $"{Application.persistentDataPath}/RudderStack/";
         private static string FilePath      => DirectoryPath + "FailureRequests";
@@ -33,11 +34,16 @@ namespace RudderStack.Unity
         /// <param name="encryptionKey"></param>
         /// <param name="timeBetweenAttempts">Time in seconds between attempts to send stored actions</param>
         /// <exception cref="Exception"></exception>
-        public static void Init(RSClient client, string encryptionKey, int timeBetweenAttempts = 300)
+        public RSFailureRequestManager(IRudderAnalyticsClient client, string encryptionKey, int timeBetweenAttempts = 300)
         {
+            if (string.IsNullOrWhiteSpace(encryptionKey))
+                throw new ArgumentException(nameof(encryptionKey));
+
             client.Failed        += OnClientFailed;
             client.Succeeded     += OnClientSucceeded;
+            client.Enqueued      += OnClientTriedToSend;
             _failedActions       =  new ConcurrentDictionary<string, BaseAction>();
+            _queuedActions       =  new ConcurrentDictionary<string, BaseAction>();
             _encryptionKey       =  encryptionKey;
             _timeBetweenAttempts =  timeBetweenAttempts;
             _running             =  true;
@@ -72,39 +78,46 @@ namespace RudderStack.Unity
             }
         }
 
+        private void OnClientTriedToSend(BaseAction action)
+        {
+            _queuedActions.TryAdd(action.MessageId, action);
+        }
 
-        public static void Stop()
+        public void Dispose()
         {
             if (!_running) return;
 
             _running = false;
 
-            if (!Directory.Exists(DirectoryPath))
-                Directory.CreateDirectory(DirectoryPath);
-
+            // treat all actions that are not sent as failed
+            foreach (var queuedAction in _queuedActions) 
+                _failedActions.TryAdd(queuedAction.Key, queuedAction.Value);
+                
+            _queuedActions.Clear();
+            
             Debug.Log($"Saving {_failedActions.Count} failed actions.");
-            File.WriteAllText(FilePath, Encryptor.Encrypt(_encryptionKey, string.Join(
-                Environment.NewLine,
-                _failedActions.Select(x => x.Value).Select(JsonConvert.SerializeObject))));
+            SaveToFile();
         }
 
-        private static void OnClientFailed(BaseAction action, System.Exception e)
+        private void OnClientFailed(BaseAction action, System.Exception e)
         {
+            _queuedActions.TryRemove(action.MessageId, out _);
             if (_failedActions.TryAdd(action.MessageId, action))
             {
                 Debug.Log($"The action of type {action.GetType()} is stored.");
             }
         }
 
-        private static void OnClientSucceeded(BaseAction action)
+        private void OnClientSucceeded(BaseAction action)
         {
+            _queuedActions.TryRemove(action.MessageId, out _);
             if (_failedActions.TryRemove(action.MessageId, out _))
             {
                 Debug.Log($"Action of type {action.GetType()} is successfully resent.");
             }
         }
 
-        private static void ResendFailedActions()
+        private void ResendFailedActions()
         {
             while (_running)
             {
@@ -117,7 +130,18 @@ namespace RudderStack.Unity
 
                     RSAnalytics.Client.Enqueue(pair.Value);
                 }
+                SaveToFile();
             }
+        }
+
+        private void SaveToFile()
+        {
+            if (!Directory.Exists(DirectoryPath))
+                Directory.CreateDirectory(DirectoryPath);
+
+            File.WriteAllText(FilePath, Encryptor.Encrypt(_encryptionKey, string.Join(
+                Environment.NewLine,
+                _failedActions.Select(x => x.Value).Select(JsonConvert.SerializeObject))));
         }
     }
 }

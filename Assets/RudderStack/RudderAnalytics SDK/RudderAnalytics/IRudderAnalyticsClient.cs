@@ -5,17 +5,19 @@ using RudderStack.Stats;
 
 namespace RudderStack
 {
-    public delegate void FailedHandler(BaseAction action, System.Exception e);
+    public delegate void FailedHandler(BaseAction    action, System.Exception e);
     public delegate void SucceededHandler(BaseAction action);
+    public delegate void EnqueuedHandler(BaseAction  action);
 
     public interface IRudderAnalyticsClient : IDisposable
     {
-        Statistics Statistics { get; set; }
-        string WriteKey { get; }
-        RudderConfig Config { get; }
+        Statistics   Statistics { get; set; }
+        string       WriteKey   { get; }
+        RudderConfig Config     { get; }
 
-        event FailedHandler Failed;
+        event FailedHandler    Failed;
         event SucceededHandler Succeeded;
+        event EnqueuedHandler  Enqueued;
 
         #region Identify
 

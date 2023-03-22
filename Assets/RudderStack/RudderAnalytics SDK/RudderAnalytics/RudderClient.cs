@@ -19,15 +19,16 @@ namespace RudderStack
 #else
         private IAsyncFlushHandler _flushHandler;
 #endif
-        private string _writeKey;
+        private string       _writeKey;
         private RudderConfig _config;
 
         public Statistics Statistics { get; set; }
 
         #region Events
 
-        public event FailedHandler Failed;
+        public event FailedHandler    Failed;
         public event SucceededHandler Succeeded;
+        public event EnqueuedHandler Enqueued;
 
         #endregion
 
@@ -57,7 +58,7 @@ namespace RudderStack
             this.Statistics = new Statistics();
 
             this._writeKey = writeKey;
-            this._config = config;
+            this._config   = config;
 
             if (requestHandler == null)
             {
@@ -340,6 +341,7 @@ namespace RudderStack
         {
             _flushHandler.Process(action).GetAwaiter().GetResult();
             this.Statistics.IncrementSubmitted();
+            Enqueued?.Invoke(action);
         }
 
         protected void ensureId(String userId, RudderOptions options)
