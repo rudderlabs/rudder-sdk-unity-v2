@@ -40,10 +40,10 @@ namespace RudderStack.Unity
                 {
                     worker.AddComponent<AutoDetectScreenChange>().userId = userId;
                 }
-            }
 
-            RSAnalytics.Initialize(writeKey, new RSConfig(dataPlaneUrl: dataPlaneUrl).SetAutoCollectAdvertId(true));
-            _failureRequestManager = new RSFailureRequestManager(RSAnalytics.Client, encryptionKey);
+                RSAnalytics.Initialize(writeKey, new RSConfig(dataPlaneUrl: dataPlaneUrl).SetAutoCollectAdvertId(true));
+                _failureRequestManager = new RSFailureRequestManager(RSAnalytics.Client, encryptionKey);
+            }
         }
 
         private void OnDestroy()

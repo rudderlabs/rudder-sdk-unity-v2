@@ -15,17 +15,16 @@ namespace RudderStack.Unity
 {
     public class RSFailureRequestManager : IDisposable
     {
-        private          bool   _running;
+        private bool _running;
         
         private readonly string _encryptionKey;
         private readonly int    _timeBetweenAttempts;
+        private readonly string _directoryPath;
+        private readonly string _filePath;
 
-        private readonly ConcurrentDictionary<string, BaseAction> _failedActions;
+        private readonly ConcurrentDictionary<string, BaseAction> _requireSendActions;
         private readonly ConcurrentDictionary<string, BaseAction> _queuedActions;
-
-        private static string DirectoryPath => $"{Application.persistentDataPath}/RudderStack/";
-        private static string FilePath      => DirectoryPath + "FailureRequests";
-
+        
 
         /// <summary>
         /// Initialize the manager
@@ -42,18 +41,21 @@ namespace RudderStack.Unity
             client.Failed        += OnClientFailed;
             client.Succeeded     += OnClientSucceeded;
             client.Enqueued      += OnClientTriedToSend;
-            _failedActions       =  new ConcurrentDictionary<string, BaseAction>();
+            _requireSendActions  =  new ConcurrentDictionary<string, BaseAction>();
             _queuedActions       =  new ConcurrentDictionary<string, BaseAction>();
             _encryptionKey       =  encryptionKey;
             _timeBetweenAttempts =  timeBetweenAttempts;
             _running             =  true;
             
+            _directoryPath = $"{Application.persistentDataPath}/RudderStack/";
+            _filePath      = _directoryPath + "FailureRequests";
+
             new Thread(ResendFailedActions).Start();
 
-            if (!File.Exists(FilePath)) return;
+            if (!File.Exists(_filePath)) return;
 
             var entries = Encryptor
-                          .Decrypt(_encryptionKey, File.ReadAllText(FilePath))
+                          .Decrypt(_encryptionKey, File.ReadAllText(_filePath))
                           .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
                           .Select(Newtonsoft.Json.Linq.JObject.Parse)
                           .ToArray();
@@ -74,13 +76,15 @@ namespace RudderStack.Unity
                     _          => throw new System.Exception($"Unknown action of type <{type}> was stored!")
                 };
 
-                _failedActions.TryAdd(action.MessageId, action);
+                _queuedActions.TryAdd(action.MessageId, action);
+                _requireSendActions.TryAdd(action.MessageId, action);
             }
         }
 
         private void OnClientTriedToSend(BaseAction action)
         {
             _queuedActions.TryAdd(action.MessageId, action);
+            SaveToFile();
         }
 
         public void Dispose()
@@ -89,32 +93,23 @@ namespace RudderStack.Unity
 
             _running = false;
 
-            // treat all actions that are not sent as failed
-            foreach (var queuedAction in _queuedActions) 
-                _failedActions.TryAdd(queuedAction.Key, queuedAction.Value);
-                
-            _queuedActions.Clear();
-            
-            Debug.Log($"Saving {_failedActions.Count} failed actions.");
+            Debug.Log($"Saving {_queuedActions.Count} actions.");
             SaveToFile();
         }
 
         private void OnClientFailed(BaseAction action, System.Exception e)
         {
-            _queuedActions.TryRemove(action.MessageId, out _);
-            if (_failedActions.TryAdd(action.MessageId, action))
-            {
+            if (_requireSendActions.TryAdd(action.MessageId, action))
                 Debug.Log($"The action of type {action.GetType()} is stored.");
-            }
         }
 
         private void OnClientSucceeded(BaseAction action)
         {
-            _queuedActions.TryRemove(action.MessageId, out _);
-            if (_failedActions.TryRemove(action.MessageId, out _))
-            {
+            if (_queuedActions.TryRemove(action.MessageId, out _)) 
+                SaveToFile();
+
+            if (_requireSendActions.TryRemove(action.MessageId, out _))
                 Debug.Log($"Action of type {action.GetType()} is successfully resent.");
-            }
         }
 
         private void ResendFailedActions()
@@ -124,24 +119,22 @@ namespace RudderStack.Unity
                 Thread.Sleep(_timeBetweenAttempts * 1000);
                 if (!_running) return; // in case the class was stopped during sleep
 
-                foreach (var pair in _failedActions)
+                foreach (var pair in _requireSendActions)
                 {
                     Debug.Log("Trying to resend!");
-
                     RSAnalytics.Client.Enqueue(pair.Value);
                 }
-                SaveToFile();
             }
         }
 
         private void SaveToFile()
         {
-            if (!Directory.Exists(DirectoryPath))
-                Directory.CreateDirectory(DirectoryPath);
+            if (!Directory.Exists(_directoryPath))
+                Directory.CreateDirectory(_directoryPath);
 
-            File.WriteAllText(FilePath, Encryptor.Encrypt(_encryptionKey, string.Join(
+            File.WriteAllText(_filePath, Encryptor.Encrypt(_encryptionKey, string.Join(
                 Environment.NewLine,
-                _failedActions.Select(x => x.Value).Select(JsonConvert.SerializeObject))));
+                _queuedActions.Select(x => x.Value).Select(JsonConvert.SerializeObject))));
         }
     }
 }
