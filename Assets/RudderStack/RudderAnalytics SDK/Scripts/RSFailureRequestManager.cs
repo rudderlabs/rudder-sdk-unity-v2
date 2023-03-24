@@ -48,7 +48,7 @@ namespace RudderStack.Unity
             _running             =  true;
             
             _directoryPath = $"{Application.persistentDataPath}/RudderStack/";
-            _filePath      = _directoryPath + "FailureRequests";
+            _filePath      = _directoryPath + "rs_persistence";
 
             new Thread(ResendFailedActions).Start();
 
