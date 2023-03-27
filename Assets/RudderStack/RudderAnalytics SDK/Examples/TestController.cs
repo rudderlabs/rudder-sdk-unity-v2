@@ -31,7 +31,7 @@ namespace Examples.RudderStack
         public void Initialize()
         {
             RSAnalytics.Initialize(writeKey.text, new RSConfig(dataPlaneUrl.text));
-            CustomLogger.LoggingHandler(Logger.Level.INFO, "RudderAnalytics Initialized", null);
+            RSLogger.LoggingHandler(Logger.Level.INFO, "RudderAnalytics Initialized", null);
         }
 
         public void Track()
