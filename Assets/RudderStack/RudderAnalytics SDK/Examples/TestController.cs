@@ -30,7 +30,7 @@ namespace Examples.RudderStack
 
         public void Initialize()
         {
-            RSAnalytics.Initialize(writeKey.text, new RSConfig(dataPlaneUrl.text));
+            RSAnalytics.Initialize(writeKey.text, FindObjectOfType<RudderStackInitializer>().encryptionKey, new RSConfig(dataPlaneUrl.text));
             RSLogger.LoggingHandler(Logger.Level.INFO, "RudderAnalytics Initialized", null);
         }
 

@@ -1929,7 +1929,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 39188149}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.9998906
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -3132,7 +3132,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3017308996314436818, guid: 4f0c6a1ced628a54a8797c53c8f7a68d, type: 3}
       propertyPath: encryptionKey
-      value: 1111
+      value: Sp6RZeaJsgbsTZPbv4kWmDCqAZLD0ZGaddScQytGvTI=
       objectReference: {fileID: 0}
     - target: {fileID: 3017308996314436818, guid: 4f0c6a1ced628a54a8797c53c8f7a68d, type: 3}
       propertyPath: enableAutoSceneLogs

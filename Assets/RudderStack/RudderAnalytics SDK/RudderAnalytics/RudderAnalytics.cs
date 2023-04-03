@@ -1,3 +1,6 @@
+using RudderStack.Model;
+using RudderStack.Request;
+
 namespace RudderStack
 {
     public class RudderAnalytics
@@ -25,6 +28,19 @@ namespace RudderStack
                 if (Client == null)
                 {
                     Client = new RudderClient(writeKey);
+                }
+            }
+        }
+
+        public static void Initialize(string writeKey, string storageEncryptionKey, RudderConfig rudderConfig, IRequestHandler requestHandler)
+        {
+            // avoiding double locking as recommended:
+            // http://www.yoda.arachsys.com/csharp/singleton.html
+            lock (padlock)
+            {
+                if (Client == null)
+                {
+                    Client = new RudderClient(writeKey, storageEncryptionKey, rudderConfig, requestHandler);
                 }
             }
         }

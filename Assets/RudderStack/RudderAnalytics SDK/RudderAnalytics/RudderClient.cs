@@ -5,6 +5,7 @@ using RudderStack.Flush;
 using RudderStack.Model;
 using RudderStack.Request;
 using RudderStack.Stats;
+using RudderStack.Unity;
 
 namespace RudderStack
 {
@@ -28,7 +29,7 @@ namespace RudderStack
 
         public event FailedHandler    Failed;
         public event SucceededHandler Succeeded;
-        public event EnqueuedHandler Enqueued;
+        public event EnqueuedHandler  Enqueued;
 
         #endregion
 
@@ -45,11 +46,27 @@ namespace RudderStack
         /// </summary>
         /// <param name="writeKey"></param>
         /// <param name="config"></param>
-        public RudderClient(string writeKey, RudderConfig config) : this(writeKey, config, null)
+        public RudderClient(string writeKey, RudderConfig config) : this(writeKey, config, (IRequestHandler)null)
         {
             if (string.IsNullOrEmpty(writeKey))
                 throw new InvalidOperationException("Please supply a valid writeKey to initialize.");
+        }
 
+        public RudderClient(string writeKey, string storageKey, RudderConfig config, IRequestHandler requestHandler)
+        {
+            this.Statistics = new Statistics();
+            this._writeKey  = writeKey;
+            this._config    = config;
+
+            IBatchFactory batchFactory = new SimpleBatchFactory(this._writeKey);
+
+            if (config.Async)
+            {
+                _flushHandler = new UnityFlushHandler(batchFactory, requestHandler, config.MaxQueueSize,
+                    config.FlushAt, config.FlushIntervalInMillis, storageKey);
+            }
+            else
+                _flushHandler = new BlockingFlushHandler(batchFactory, requestHandler);
         }
 
         internal RudderClient(string writeKey, RudderConfig config, IRequestHandler requestHandler)

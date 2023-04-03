@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using RudderStack.Model;
@@ -44,12 +43,12 @@ namespace RudderStack.Unity
         
         public RSClient(string writeKey)
         {
-            Inner = new RudderClient(writeKey, new RSConfig());
+            Inner = new RudderClient(writeKey, new RSConfig(), null);
         }
 
         public RSClient(string writeKey, RSConfig config)
         {
-            Inner = new RudderClient(writeKey, config);
+            Inner = new RudderClient(writeKey, config, null);
         }
 
         public string WriteKey

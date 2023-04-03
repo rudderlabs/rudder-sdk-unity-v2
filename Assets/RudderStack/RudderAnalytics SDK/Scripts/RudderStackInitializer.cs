@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using UnityEngine;
 
 namespace RudderStack.Unity
@@ -12,18 +13,17 @@ namespace RudderStack.Unity
         [SerializeField] private string writeKey;
         [Space] 
         [Tooltip("Any string")]
-        [SerializeField] private string encryptionKey;
+        public string encryptionKey;
         [Space]
         [Tooltip("Log automatically if a new scene is loaded.")]
         [SerializeField] private bool enableAutoSceneLogs;
         [Tooltip("UserId for automatic scene logging.")]
         [SerializeField] private string userId;
 
-        private RSFailureRequestManager _failureRequestManager;
 
         private static bool _workerCreated;
 
-        private void Start()
+        public void Start()
         {
             if (string.IsNullOrEmpty(dataPlaneUrl)) 
                 throw new ArgumentException(nameof(dataPlaneUrl));
@@ -41,14 +41,22 @@ namespace RudderStack.Unity
                     worker.AddComponent<AutoDetectScreenChange>().userId = userId;
                 }
 
-                RSAnalytics.Initialize(writeKey, new RSConfig(dataPlaneUrl: dataPlaneUrl).SetAutoCollectAdvertId(true));
-                _failureRequestManager = new RSFailureRequestManager(RSAnalytics.Client, encryptionKey);
+                RSAnalytics.Initialize(writeKey, encryptionKey, new RSConfig(dataPlaneUrl: dataPlaneUrl).SetAutoCollectAdvertId(true));
+            }
+        }
+
+        private void OnValidate()
+        {
+            if (string.IsNullOrWhiteSpace(encryptionKey))
+            {
+                using var aes = System.Security.Cryptography.Aes.Create();
+                encryptionKey = Convert.ToBase64String(aes.Key);
             }
         }
 
         private void OnDestroy()
         {
-            _failureRequestManager.Dispose();
+            RSAnalytics.Dispose();
         }
     }
 }
