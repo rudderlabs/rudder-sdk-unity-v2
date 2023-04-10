@@ -1,11 +1,10 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using RudderStack;
 
 namespace RudderStack.Unity
 {
-    public class CustomLogger : MonoBehaviour
+    public class RSLogger : MonoBehaviour
     {
         [SerializeField] private TMP_Text log;
         [SerializeField] private bool     writeInUnityConsole;

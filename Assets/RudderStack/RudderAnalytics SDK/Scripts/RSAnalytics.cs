@@ -1,26 +1,50 @@
+using System;
+using System.Net.Http;
+using RudderStack.Request;
+
 namespace RudderStack.Unity
 {
     public class RSAnalytics
     {
         private static RSClient _client;
-        public static string VERSION => RudderAnalytics.VERSION;
-
+        public static  string   VERSION => RudderAnalytics.VERSION;
+        
         public static RSClient Client
         {
             get => _client;
             private set => _client ??= value;
         }
 
-        public static void Initialize(string writeKey)
+        public static void Initialize(string writeKey, string storageEncryptionKey)
         {
-            RudderAnalytics.Initialize(writeKey);
-            Client = new RSClient(RudderAnalytics.Client);
+            Initialize(writeKey, storageEncryptionKey, new RSConfig());
         }
 
-        public static void Initialize(string writeKey, RSConfig config)
+        public static void Initialize(string writeKey, string storageEncryptionKey, RSConfig config)
         {
-            RudderAnalytics.Initialize(writeKey, config);
-            Client = new RSClient(RudderAnalytics.Client);
+            IUnityRequestHandler requestHandler;
+            
+            if (config.Send)
+            {
+                if (config.MaxRetryTime.HasValue)
+                {
+                    requestHandler = new UnityRequestHandler(config.Timeout,
+                        new Backo(max: (Convert.ToInt32(config.MaxRetryTime.Value.TotalSeconds) * 1000), jitter: 5000));
+                }
+                else
+                {
+                    requestHandler = new UnityRequestHandler(config.Timeout);
+                }
+
+            }
+            else
+            {
+                requestHandler = new UnityFakeRequestHandler();
+            }
+            
+            RudderAnalytics.Initialize(writeKey, storageEncryptionKey, config, requestHandler);
+            Client         = new RSClient(RudderAnalytics.Client);
+            requestHandler.Init(RudderAnalytics.Client, new HttpClient());
         }
 
         public static void Initialize(RSClient client)
@@ -32,6 +56,7 @@ namespace RudderStack.Unity
         public static void Dispose()
         {
             RudderAnalytics.Dispose();
+            Client.Dispose();
         }
     }
 }

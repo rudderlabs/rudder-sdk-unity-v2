@@ -4,6 +4,7 @@ using RudderStack.Model;
 using RudderStack.Unity;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 using Logger = RudderStack.Logger;
 
@@ -29,8 +30,8 @@ namespace Examples.RudderStack
 
         public void Initialize()
         {
-            RSAnalytics.Initialize(writeKey.text, new RSConfig(dataPlaneUrl.text));
-            CustomLogger.LoggingHandler(Logger.Level.INFO, "RudderAnalytics Initialized", null);
+            RSAnalytics.Initialize(writeKey.text, FindObjectOfType<RudderStackInitializer>().encryptionKey, new RSConfig(dataPlaneUrl.text));
+            RSLogger.LoggingHandler(Logger.Level.INFO, "RudderAnalytics Initialized", null);
         }
 
         public void Track()
@@ -49,6 +50,16 @@ namespace Examples.RudderStack
             
             RSAnalytics.Client.PutAdvertisingId(id);
             RSAnalytics.Client.PutDeviceToken(token);
+        }
+
+        public void SwitchScene()
+        {
+            SceneManager.LoadScene("RudderStack/RudderAnalytics SDK/Examples/Example 1");
+        }
+
+        public void SwitchBack()
+        {
+            SceneManager.LoadScene("RudderStack/RudderAnalytics SDK/Examples/Example");
         }
     }
 }
