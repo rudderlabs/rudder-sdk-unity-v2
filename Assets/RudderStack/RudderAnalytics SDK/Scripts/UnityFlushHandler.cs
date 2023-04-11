@@ -153,10 +153,8 @@ namespace RudderStack.Unity
             Logger.Debug($"Request completed! Success: {succeeded}");
             if (succeeded)
             {
-                foreach (var action in batch.batch)
-                {
+                foreach (var action in batch.batch) 
                     _queue.Remove(action);
-                }
             }
             else
             {

@@ -1,22 +1,24 @@
 using System;
 using System.Text;
+using RudderStack.Model;
 using UnityEngine;
 
 namespace RudderStack.Unity
 {
+    [ExecuteAlways]
     [HelpURL("https://app.rudderstack.com/")]
     public class RudderStackInitializer : MonoBehaviour
     {
         [Tooltip("You can find DataPlane on your RudderStack personal page")]
         [SerializeField] private string dataPlaneUrl;
+
         [Tooltip("You can find DataPlane in Source's setup")]
         [SerializeField] private string writeKey;
-        [Space] 
-        [Tooltip("Any string")]
-        public string encryptionKey;
+
         [Space]
         [Tooltip("Log automatically if a new scene is loaded.")]
         [SerializeField] private bool enableAutoSceneLogs;
+
         [Tooltip("UserId for automatic scene logging.")]
         [SerializeField] private string userId;
 
@@ -25,38 +27,53 @@ namespace RudderStack.Unity
 
         public void Start()
         {
-            if (string.IsNullOrEmpty(dataPlaneUrl)) 
-                throw new ArgumentException(nameof(dataPlaneUrl));
-            if (string.IsNullOrEmpty(writeKey)) 
-                throw new ArgumentException(nameof(writeKey));
-
-            if (!_workerCreated)
+            if (Application.isPlaying)
             {
-                _workerCreated = true;
-                var worker = new GameObject("RudderStack Worker");
-                DontDestroyOnLoad(worker);
-                worker.AddComponent<UnityMainThread>();
-                if (enableAutoSceneLogs)
+                if (string.IsNullOrEmpty(dataPlaneUrl))
+                    throw new ArgumentException(nameof(dataPlaneUrl));
+                if (string.IsNullOrEmpty(writeKey))
+                    throw new ArgumentException(nameof(writeKey));
+
+                if (!_workerCreated)
                 {
-                    worker.AddComponent<AutoDetectScreenChange>().userId = userId;
+                    _workerCreated = true;
+                    var worker = new GameObject("RudderStack Worker");
+                    DontDestroyOnLoad(worker);
+                    worker.AddComponent<UnityMainThread>();
+                    if (enableAutoSceneLogs)
+                    {
+                        worker.AddComponent<AutoDetectScreenChange>().userId = userId;
+                    }
+
+                    RSAnalytics.Initialize(writeKey,
+                        new RSConfig(dataPlaneUrl: dataPlaneUrl).SetAutoCollectAdvertId(true));
+                    
+
+                    StartCoroutine(RSAnalytics.FetchConfig(writeKey, print));
                 }
-
-                RSAnalytics.Initialize(writeKey, encryptionKey, new RSConfig(dataPlaneUrl: dataPlaneUrl).SetAutoCollectAdvertId(true));
             }
-        }
-
-        private void OnValidate()
-        {
-            if (string.IsNullOrWhiteSpace(encryptionKey))
+            else
             {
-                using var aes = System.Security.Cryptography.Aes.Create();
-                encryptionKey = Convert.ToBase64String(aes.Key);
+#if UNITY_EDITOR
+                if (Resources.Load<RsEncryptionKey>("rudderStackEncryptionKey") == null)
+                {
+                    const string path =
+                        "Assets/RudderStack/RudderAnalytics SDK/Resources/rudderStackEncryptionKey.asset";
+
+                    var example = ScriptableObject.CreateInstance<RsEncryptionKey>();
+                    example.GenerateKey();
+                    
+                    UnityEditor.AssetDatabase.CreateAsset(example, path);
+                    UnityEditor.AssetDatabase.SaveAssets();
+                    UnityEditor.AssetDatabase.Refresh();
+                }
+#endif
             }
         }
 
         private void OnDestroy()
         {
-            RSAnalytics.Dispose();
+            if (Application.isPlaying) RSAnalytics.Dispose();
         }
     }
 }
