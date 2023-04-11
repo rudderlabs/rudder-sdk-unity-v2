@@ -1,5 +1,4 @@
-using RudderStack.Model;
-using RudderStack.Request;
+using RudderStack.Flush;
 
 namespace RudderStack
 {
@@ -15,11 +14,7 @@ namespace RudderStack
 
         public static RudderClient Client { get; private set; }
 
-        /// <summary>
-        /// Initialized the default RudderStack client with your API writeKey.
-        /// </summary>
-        /// <param name="writeKey"></param>
-        public static void Initialize(string writeKey)
+        public static void Initialize(string writeKey, RudderConfig rudderConfig, IAsyncFlushHandler flushHandler)
         {
             // avoiding double locking as recommended:
             // http://www.yoda.arachsys.com/csharp/singleton.html
@@ -27,20 +22,7 @@ namespace RudderStack
             {
                 if (Client == null)
                 {
-                    Client = new RudderClient(writeKey);
-                }
-            }
-        }
-
-        public static void Initialize(string writeKey, string storageEncryptionKey, RudderConfig rudderConfig, IRequestHandler requestHandler)
-        {
-            // avoiding double locking as recommended:
-            // http://www.yoda.arachsys.com/csharp/singleton.html
-            lock (padlock)
-            {
-                if (Client == null)
-                {
-                    Client = new RudderClient(writeKey, storageEncryptionKey, rudderConfig, requestHandler);
+                    Client = new RudderClient(writeKey, rudderConfig, flushHandler);
                 }
             }
         }

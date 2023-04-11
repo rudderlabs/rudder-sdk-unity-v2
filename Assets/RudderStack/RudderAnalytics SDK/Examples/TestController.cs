@@ -1,14 +1,12 @@
 using System.Collections.Generic;
-using RudderStack;
 using RudderStack.Model;
 using RudderStack.Unity;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.Serialization;
 using Logger = RudderStack.Logger;
 
-namespace Examples.RudderStack
+namespace Examples.RudderStack.Unity
 {
 
     public class TestController : MonoBehaviour
@@ -30,18 +28,28 @@ namespace Examples.RudderStack
 
         public void Initialize()
         {
-            RSAnalytics.Initialize(writeKey.text, FindObjectOfType<RudderStackInitializer>().encryptionKey, new RSConfig(dataPlaneUrl.text));
+            RSAnalytics.Initialize(writeKey.text, new RSConfig(dataPlaneUrl.text));
             RSLogger.LoggingHandler(Logger.Level.INFO, "RudderAnalytics Initialized", null);
+            RSAnalytics.Client.Identify(userID.text, new Dict());
         }
 
         public void Track()
         {
             RSAnalytics.Client.Track(
-                userID.text,
                 eventName.text,
                 new Dictionary<string, object> { { propertyType.text, propertyValue.text }, }
             );
         }
+        
+        public void Page()
+        {
+            RSAnalytics.Client.Page(
+                eventName.text,
+                new Dictionary<string, object> { { propertyType.text, propertyValue.text }, }
+            );
+        }
+        
+        
 
         public void SetCredentials()
         {
