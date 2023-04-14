@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using RudderStack.Model;
 using RudderStack.Stats;
 using UnityEngine;
@@ -9,21 +10,46 @@ namespace RudderStack.Unity
 {
     public class RSClient
     {
-        private const string AnonIdKey = "rudder-stack-anon-id";
+        private const string AnonIdKey = "rudderstack-anon-id";
+        private const string UserIdKey = "rudderstack-user-id";
+        private const string TraitsKey = "rudderstack-user-traits";
         
-        private string _advertisingId;
-        private string _deviceToken;
+        private static string _advertisingId;
+        private static string _deviceToken;
+        
+        private string _userId;
+        private string _anonymousId;
+        
+        private IDictionary<string, object> _userTraits;
 
         public string UserId
         {
-            get;
-            private set;
+            get => _userId;
+            private set
+            {
+                _userId = value;
+                PlayerPrefs.SetString(UserIdKey, value);
+            }
         }
 
         public IDictionary<string, object> UserTraits
         {
-            get;
-            private set;
+            get => _userTraits;
+            private set
+            {
+                _userTraits = value;
+                PlayerPrefs.SetString(TraitsKey, JsonConvert.SerializeObject(value));
+            }
+        }
+
+        public string AnonymousId
+        {
+            get => _anonymousId;
+            private set
+            {
+                _anonymousId = value;
+                PlayerPrefs.SetString(AnonIdKey, value);
+            }
         }
 
         public RudderClient Inner { get; }
@@ -48,38 +74,16 @@ namespace RudderStack.Unity
         
         public RSClient(RudderClient innerClient)
         {
-            Inner = innerClient;
-        }
+            Inner      = innerClient;
+            UserId     = PlayerPrefs.GetString(UserIdKey);
+            UserTraits = JsonConvert.DeserializeObject<IDictionary<string, object>>(PlayerPrefs.GetString(TraitsKey));
 
-        public string AnonymousId
-        {
-            get
-            {
-                if (PlayerPrefs.HasKey(AnonIdKey))
-                {
-                    return PlayerPrefs.GetString(AnonIdKey);
-                }
-                else
-                {
-                    var id = Guid.NewGuid().ToString();
-                    PlayerPrefs.SetString(AnonIdKey, id);
-                    return id;
-                }
-            }
+            if (PlayerPrefs.HasKey(AnonIdKey))
+                _anonymousId = PlayerPrefs.GetString(AnonIdKey);
+            else
+                AnonymousId = Guid.NewGuid().ToString();
         }
         
-        /*
-        public RSClient(string writeKey)
-        {
-            Inner = new RudderClient(writeKey, new RSConfig(), null);
-        }
-
-        public RSClient(string writeKey, RSConfig config)
-        {
-            Inner = new RudderClient(writeKey, config, null);
-        }
-        */
-
         public string WriteKey
         {
             get => Inner.WriteKey;
@@ -100,7 +104,8 @@ namespace RudderStack.Unity
         {
             UserId     = userId;
             UserTraits = traits;
-            SetDeviceValues(options);
+            
+            SetAdditionalValues(options);
             Inner.Identify(userId, traits, options);
         }
 
@@ -113,7 +118,7 @@ namespace RudderStack.Unity
 
         public void Group(string groupId, IDictionary<string, object> traits, RudderOptions options)
         {
-            SetDeviceValues(options);
+            SetAdditionalValues(options);
             Inner.Group(UserId, groupId, traits, options);
         }
 
@@ -128,7 +133,7 @@ namespace RudderStack.Unity
 
         public void Track(string eventName, IDictionary<string, object> properties, RudderOptions options)
         {
-            SetDeviceValues(options);
+            SetAdditionalValues(options);
             Inner.Track(UserId, eventName, properties, options);
         }
 
@@ -137,7 +142,7 @@ namespace RudderStack.Unity
 
         public void Alias(string userId, RudderOptions options)
         {
-            SetDeviceValues(options);
+            SetAdditionalValues(options);
             Inner.Alias(UserId, userId, options);
             UserId = userId;
         }
@@ -159,7 +164,7 @@ namespace RudderStack.Unity
 
         public void Page(string name, string category, IDictionary<string, object> properties, RudderOptions options)
         {
-            SetDeviceValues(options);
+            SetAdditionalValues(options);
             Inner.Page(UserId, name, category, properties, options);
         }
 
@@ -180,11 +185,11 @@ namespace RudderStack.Unity
 
         public void Screen(string name, string category, IDictionary<string, object> properties, RudderOptions options)
         {
-            SetDeviceValues(options);
+            SetAdditionalValues(options);
             Inner.Screen(UserId, name, category, properties, options);
         }
 
-        private void SetDeviceValues(RudderOptions options)
+        private void SetAdditionalValues(RudderOptions options)
         {
             if (Config.GetAutoCollectAdvertId())
             {
@@ -201,7 +206,7 @@ namespace RudderStack.Unity
             }
 
             options.Context.Add("traits", UserTraits);
-            options.SetAnonymousId(AnonIdKey);
+            options.SetAnonymousId(AnonymousId);
         }
 
         public void Flush() => Inner.Flush();
@@ -215,7 +220,7 @@ namespace RudderStack.Unity
         /// <b>Call this method before initializing the RudderClient</b>
         /// </summary>
         /// <param name="advertisingId">IDFA for the device</param>
-        public void PutAdvertisingId(string advertisingId)
+        public static void PutAdvertisingId(string advertisingId)
         {
             _advertisingId = advertisingId;
         }
@@ -224,18 +229,28 @@ namespace RudderStack.Unity
         /// Set the push token for the device to be passed to the downstream destinations
         /// </summary>
         /// <param name="deviceToken">Push Token from FCM</param>
-        public void PutDeviceToken(string deviceToken)
+        public static void PutDeviceToken(string deviceToken)
         {
             _deviceToken = deviceToken;
         }
 
+        public void SetAnonymousId(string newId)
+        {
+            AnonymousId = newId;
+        }
+
         public void Reset()
         {
-            Flush();
-            PlayerPrefs.DeleteKey(AnonIdKey);
-            UserId     = null;
-            UserTraits = null;
-
+            //Flush();
+            FlushAsync().GetAwaiter().OnCompleted(() =>
+            {
+                AnonymousId = Guid.NewGuid().ToString();
+            
+                PlayerPrefs.DeleteKey(UserIdKey);
+                PlayerPrefs.DeleteKey(TraitsKey);
+                _userTraits = null;
+                _userId     = null;
+            });
         }
     }
 }
