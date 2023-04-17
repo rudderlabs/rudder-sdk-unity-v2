@@ -7,7 +7,6 @@ namespace RudderStack
 {
     public delegate void FailedHandler(BaseAction    action, System.Exception e);
     public delegate void SucceededHandler(BaseAction action);
-    public delegate void EnqueuedHandler(BaseAction  action);
 
     public interface IRudderAnalyticsClient : IDisposable
     {
@@ -17,7 +16,6 @@ namespace RudderStack
 
         event FailedHandler    Failed;
         event SucceededHandler Succeeded;
-        event EnqueuedHandler  Enqueued;
 
         #region Identify
 
@@ -295,21 +293,13 @@ namespace RudderStack
         /// The `page` method let your record whenever a user sees a webpage on
         /// your website, and attach a `name`, `category` or `properties` to the webpage load.
         /// </summary>
-        ///
-        /// <param name="userId">The visitor's identifier after they log in, or you know
-        /// who they are. By explicitly identifying a user, you tie all of their actions to their identity.
-        /// This makes it possible for you to run things like rudder-based email campaigns.</param>
-        ///
         /// <param name="name">The name of the webpage, like "Sign-up", "Login"</param>
-        ///
         /// <param name="category">The (optional) category of the mobile screen, like "Authentication", "Sports"</param>
-        ///
         /// <param name="properties"> A dictionary with items that describe the page
-        /// in more detail. This argument is optional, but highly recommended —
-        /// you’ll find these properties extremely useful later.</param>
-        ///
+        ///     in more detail. This argument is optional, but highly recommended —
+        ///     you’ll find these properties extremely useful later.</param>
         /// <param name="options">Options allowing you to set timestamp, anonymousId, target integrations,
-        /// and the context of the message.</param>
+        ///     and the context of the message.</param>
         void Page(string userId, string name, string category, IDictionary<string, object> properties, RudderOptions options);
 
         #endregion

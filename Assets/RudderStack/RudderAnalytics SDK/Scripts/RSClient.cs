@@ -1,15 +1,57 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using RudderStack.Model;
 using RudderStack.Stats;
+using UnityEngine;
 
 namespace RudderStack.Unity
 {
-    public class RSClient : IRudderAnalyticsClient
+    public class RSClient
     {
-        private string _advertisingId;
-        private string _deviceToken;
+        private const string AnonIdKey = "rudderstack-anon-id";
+        private const string UserIdKey = "rudderstack-user-id";
+        private const string TraitsKey = "rudderstack-user-traits";
         
+        private static string _advertisingId;
+        private static string _deviceToken;
+        
+        private string _userId;
+        private string _anonymousId;
+        
+        private IDictionary<string, object> _userTraits;
+
+        public string UserId
+        {
+            get => _userId;
+            private set
+            {
+                _userId = value;
+                PlayerPrefs.SetString(UserIdKey, value);
+            }
+        }
+
+        public IDictionary<string, object> UserTraits
+        {
+            get => _userTraits;
+            private set
+            {
+                _userTraits = value;
+                PlayerPrefs.SetString(TraitsKey, JsonConvert.SerializeObject(value));
+            }
+        }
+
+        public string AnonymousId
+        {
+            get => _anonymousId;
+            private set
+            {
+                _anonymousId = value;
+                PlayerPrefs.SetString(AnonIdKey, value);
+            }
+        }
+
         public RudderClient Inner { get; }
 
         public Statistics Statistics
@@ -30,27 +72,18 @@ namespace RudderStack.Unity
             remove => Inner.Succeeded -= value;
         }
         
-        public event EnqueuedHandler Enqueued
-        {
-            add => Inner.Enqueued += value;
-            remove => Inner.Enqueued -= value;
-        }
-
         public RSClient(RudderClient innerClient)
         {
-            Inner = innerClient;
+            Inner      = innerClient;
+            UserId     = PlayerPrefs.GetString(UserIdKey);
+            UserTraits = JsonConvert.DeserializeObject<IDictionary<string, object>>(PlayerPrefs.GetString(TraitsKey));
+
+            if (PlayerPrefs.HasKey(AnonIdKey))
+                _anonymousId = PlayerPrefs.GetString(AnonIdKey);
+            else
+                AnonymousId = Guid.NewGuid().ToString();
         }
         
-        public RSClient(string writeKey)
-        {
-            Inner = new RudderClient(writeKey, new RSConfig(), null);
-        }
-
-        public RSClient(string writeKey, RSConfig config)
-        {
-            Inner = new RudderClient(writeKey, config, null);
-        }
-
         public string WriteKey
         {
             get => Inner.WriteKey;
@@ -61,117 +94,102 @@ namespace RudderStack.Unity
             get => Inner.Config as RSConfig;
         }
 
-        RudderConfig IRudderAnalyticsClient.Config
-        {
-            get => Inner.Config;
-        }
-
-        public void Enqueue(BaseAction baseAction) =>
-            Inner.Enqueue(baseAction);
-
+        public void Identify(string userId) =>
+            Identify(userId, null, new RudderOptions());
+        
         public void Identify(string userId, IDictionary<string, object> traits) =>
             Identify(userId, traits, new RudderOptions());
 
         public void Identify(string userId, IDictionary<string, object> traits, RudderOptions options)
         {
-            SetDeviceValues(null);
+            UserId     = userId;
+            UserTraits = traits;
+            
+            SetAdditionalValues(options);
             Inner.Identify(userId, traits, options);
         }
 
 
-        public void Group(string userId, string groupId, RudderOptions options) =>
-            Group(userId, groupId, null, options);
+        public void Group(string groupId, RudderOptions options) =>
+            Group(groupId, null, options);
 
-        public void Group(string userId, string groupId, IDictionary<string, object> traits) =>
-            Group(userId, groupId, traits, new RudderOptions());
+        public void Group(string groupId, IDictionary<string, object> traits) =>
+            Group(groupId, traits, new RudderOptions());
 
-        public void Group(string userId, string groupId, IDictionary<string, object> traits, RudderOptions options)
+        public void Group(string groupId, IDictionary<string, object> traits, RudderOptions options)
         {
-            SetDeviceValues(options);
-            Inner.Group(userId, groupId, traits, options);
+            SetAdditionalValues(options);
+            Inner.Group(UserId, groupId, traits, options);
         }
 
-        public void Track(string userId, string eventName) =>
-            Track(userId, eventName, null, new RudderOptions());
+        public void Track(string eventName) =>
+            Track(eventName, null, new RudderOptions());
 
-        public void Track(string userId, string eventName, IDictionary<string, object> properties) =>
-            Track(userId, eventName, properties, new RudderOptions());
+        public void Track(string eventName, IDictionary<string, object> properties) =>
+            Track(eventName, properties, new RudderOptions());
 
-        public void Track(string userId, string eventName, RudderOptions options) =>
-            Track(userId, eventName, null, new RudderOptions());
+        public void Track(string eventName, RudderOptions options) =>
+            Track(eventName, null, new RudderOptions());
 
-        public void Track(
-            string                      userId,
-            string                      eventName,
-            IDictionary<string, object> properties,
-            RudderOptions               options)
+        public void Track(string eventName, IDictionary<string, object> properties, RudderOptions options)
         {
-            SetDeviceValues(options);
-            Inner.Track(userId, eventName, properties, options);
+            SetAdditionalValues(options);
+            Inner.Track(UserId, eventName, properties, options);
         }
 
-        public void Alias(string previousId, string userId) =>
-            Alias(previousId, userId, new RudderOptions());
+        public void Alias(string userId) =>
+            Alias(userId, new RudderOptions());
 
-        public void Alias(string previousId, string userId, RudderOptions options)
+        public void Alias(string userId, RudderOptions options)
         {
-            SetDeviceValues(options);
-            Inner.Alias(previousId, userId, options);
+            SetAdditionalValues(options);
+            Inner.Alias(UserId, userId, options);
+            UserId = userId;
         }
 
-        public void Page(string userId, string name) =>
-            Page(userId, name, null, null, new RudderOptions());
+        public void Page(string name) =>
+            Page(name, null, null, new RudderOptions());
 
-        public void Page(string userId, string name, RudderOptions options) =>
-            Page(userId, name, null, null, options);
+        public void Page(string name, RudderOptions options) =>
+            Page(name, null, null, options);
 
-        public void Page(string userId, string name, string category) =>
-            Page(userId, name, category, null, new RudderOptions());
+        public void Page(string name, string category) =>
+            Page(name, category, null, new RudderOptions());
 
-        public void Page(string userId, string name, IDictionary<string, object> properties) =>
-            Page(userId, name, null, properties, new RudderOptions());
+        public void Page(string name, IDictionary<string, object> properties) =>
+            Page(name, null, properties, new RudderOptions());
 
-        public void Page(string userId, string name, IDictionary<string, object> properties, RudderOptions options) =>
-            Page(userId, name, null, properties, options);
+        public void Page(string name, IDictionary<string, object> properties, RudderOptions options) =>
+            Page(name, null, properties, options);
 
-        public void Page(
-            string                      userId,
-            string                      name,
-            string                      category,
-            IDictionary<string, object> properties,
-            RudderOptions               options)
+        public void Page(string name, string category, IDictionary<string, object> properties, RudderOptions options)
         {
-            SetDeviceValues(options);
-            Inner.Page(userId, name, category, properties, options);
+            SetAdditionalValues(options);
+            Inner.Page(UserId, name, category, properties, options);
         }
 
-        public void Screen(string userId, string name) =>
-            Screen(userId, name, null, null, new RudderOptions());
+        public void Screen(string name) =>
+            Screen(name, null, null, new RudderOptions());
 
-        public void Screen(string userId, string name, RudderOptions options) =>
-            Screen(userId, name, null, null, options);
+        public void Screen(string name, RudderOptions options) =>
+            Screen(name, null, null, options);
 
-        public void Screen(string userId, string name, string category) =>
-            Screen(userId, name, category, null, new RudderOptions());
+        public void Screen(string name, string category) =>
+            Screen(name, category, null, new RudderOptions());
 
-        public void Screen(string userId, string name, IDictionary<string, object> properties) =>
-            Screen(userId, name, null, properties, new RudderOptions());
+        public void Screen(string name, IDictionary<string, object> properties) =>
+            Screen(name, null, properties, new RudderOptions());
 
-        public void Screen(string userId, string name, IDictionary<string, object> properties, RudderOptions options) =>
-            Screen(userId, name, null, properties, options);
+        public void Screen(string name, IDictionary<string, object> properties, RudderOptions options) =>
+            Screen(name, null, properties, options);
 
-        public void Screen(
-            string                      userId,
-            string                      name,
-            string                      category,
-            IDictionary<string, object> properties,
-            RudderOptions               options)
+        public void Screen(string name, string category, IDictionary<string, object> properties, RudderOptions options)
         {
-            SetDeviceValues(options);
-            Inner.Screen(userId, name, category, properties, options);
+            SetAdditionalValues(options);
+            Inner.Screen(UserId, name, category, properties, options);
         }
 
-        private void SetDeviceValues(RudderOptions options)
+        private void SetAdditionalValues(RudderOptions options)
         {
             if (Config.GetAutoCollectAdvertId())
             {
@@ -186,6 +204,9 @@ namespace RudderStack.Unity
                 else
                     options.Context.Add("device", value);
             }
+
+            options.Context.Add("traits", UserTraits);
+            options.SetAnonymousId(AnonymousId);
         }
 
         public void Flush() => Inner.Flush();
@@ -199,7 +220,7 @@ namespace RudderStack.Unity
         /// <b>Call this method before initializing the RudderClient</b>
         /// </summary>
         /// <param name="advertisingId">IDFA for the device</param>
-        public void PutAdvertisingId(string advertisingId)
+        public static void PutAdvertisingId(string advertisingId)
         {
             _advertisingId = advertisingId;
         }
@@ -208,9 +229,28 @@ namespace RudderStack.Unity
         /// Set the push token for the device to be passed to the downstream destinations
         /// </summary>
         /// <param name="deviceToken">Push Token from FCM</param>
-        public void PutDeviceToken(string deviceToken)
+        public static void PutDeviceToken(string deviceToken)
         {
             _deviceToken = deviceToken;
+        }
+
+        public void SetAnonymousId(string newId)
+        {
+            AnonymousId = newId;
+        }
+
+        public void Reset()
+        {
+            //Flush();
+            FlushAsync().GetAwaiter().OnCompleted(() =>
+            {
+                AnonymousId = Guid.NewGuid().ToString();
+            
+                PlayerPrefs.DeleteKey(UserIdKey);
+                PlayerPrefs.DeleteKey(TraitsKey);
+                _userTraits = null;
+                _userId     = null;
+            });
         }
     }
 }

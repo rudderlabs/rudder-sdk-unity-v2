@@ -1,44 +1,25 @@
 using System.Collections.Generic;
-using TMPro;
+using System.Linq;
 using UnityEngine;
 
 namespace RudderStack.Unity
 {
     public class RSLogger : MonoBehaviour
     {
-        [SerializeField] private TMP_Text log;
-        [SerializeField] private bool     writeInUnityConsole;
-        private static           TMP_Text s_log;
-        private static           bool     s_writeInUnityConsole;
+        public Logger.Level minLevel = Logger.Level.DEBUG;
 
         private void OnEnable()  => Logger.Handlers += LoggingHandler;
         private void OnDisable() => Logger.Handlers -= LoggingHandler;
 
-        private void Awake()
+        private void LoggingHandler(Logger.Level level, string message, IDictionary<string, object> args)
         {
-            s_log                 = log;
-            s_writeInUnityConsole = writeInUnityConsole;
-        }
+            if (level < minLevel)
+                return;
 
-        public static void LoggingHandler(Logger.Level level, string message, IDictionary<string, object> args)
-        {
-            if (args != null)
-            {
-                foreach (var key in args.Keys)
-                {
-                    message += $" {"" + key}: {"" + args[key]},";
-                }
-            }
+            if (args != null) 
+                message += string.Concat(args.Keys.Select(x => $"\n\t {x}: {args[x]},"));
 
-            var logText = $"[RudderAnalytics] [{level}] {message}";
-            if (s_writeInUnityConsole)
-                Debug.Log(logText);
-
-            UnityMainThread._Wkr.AddJob(() =>
-            {
-                if (s_log)
-                    s_log.text += logText + "\n";
-            });
+            Debug.Log($"[RudderAnalytics] [{level}] {message}");
         }
     }
 }
