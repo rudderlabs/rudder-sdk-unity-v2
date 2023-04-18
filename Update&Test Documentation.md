@@ -26,7 +26,11 @@ Additional guide:
 3. Run the build in VisualStudio  
 4. Setup Remote Machine:  
 In the Solution Explorer, right-click the project and select Properties. Select the Debug tab, change Target device to Remote Machine, type the IP address or hostname of your Xbox One console into the Remote machine field, and select Universal (Unencrypted Protocol) in the Authentication Mode drop-down list.
-5. Select x64 from the dropdown to the left of the green play button in the top menu bar.  
-6. When you press F5, your app will build and start to deploy on your Xbox One.  
-7. The first time you do this, Visual Studio will prompt you for a PIN for your Xbox One. You can get a PIN by starting Dev Home on your Xbox One and selecting the Show Visual Studio pin button.  
-8. After you have paired, your app will start to deploy  
+![image](https://lh3.googleusercontent.com/drive-viewer/AAOQEORe1M2-FspZscRn7-EYWBk5gCxzP-ivTguRdif2BdtqYc_yBp4rL-SXIHnOTFzfLAhQ8xZQOTV5bILoBfN3G3biOVmFMw=s1600)
+![image](https://lh3.googleusercontent.com/drive-viewer/AAOQEOS3LelnvYbzwQex8oVeyFu3U6dx_9DNSHjes4boiOBq-bsSJjqBnYmRBkNisGLtkBu-qhXM_qEkGcaLVJGJ6mtyaz22=s2560)
+5. Select x64 and "Release" from the dropdown to the left of the green play button in the top menu bar.  
+7. When you press F5, your app will build and start to deploy on your Xbox One.  
+8. The first time you do this, Visual Studio will prompt you for a PIN for your Xbox One. You can get a PIN by starting Dev Home on your Xbox One and selecting the Show Visual Studio pin button.  
+9. After you have paired, your app will start to deploy  
+
+
