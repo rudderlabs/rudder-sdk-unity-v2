@@ -10,60 +10,62 @@ namespace Examples.RudderStack.Unity
 
     public class TestController : MonoBehaviour
     {
-        [Header("Initialization")]
-        [SerializeField] private InputField dataPlane;
-        [SerializeField] private InputField writeKey;
-        [Space]
-        [SerializeField] private InputField deviceToken;
-        [SerializeField] private InputField advertisementId;
-        
-        [Header("Identification")]
-        [SerializeField] private InputField userID;
-        [SerializeField] private InputField newUserId;
-        [SerializeField] private Text       userDisplay;
+        private int count = 0;
 
-        [Header("Track & Page")]
-        [SerializeField] private InputField eventName;
-        [SerializeField] private InputField propertyType;
-        [SerializeField] private InputField propertyValue;
-
-        private void Update()
+        private void Start()
         {
-            if (userDisplay)
-            {
-                var id = RSAnalytics.Client?.UserId;
-                userDisplay.text = string.IsNullOrEmpty(id) ? "NULL" : id;
-            }
+            Initialize();
         }
 
-        public void PutAdvertisingId() => RSClient.PutAdvertisingId(advertisementId.text);
+        public void PutAnonymousId() => RSAnalytics.Client.SetAnonymousId("anonymous_id");
 
-        public void PutDeviceToken() => RSClient.PutDeviceToken(deviceToken.text);
+        public void PutAdvertisingId() => RSClient.PutAdvertisingId("ios_advertisement_id");
+
+        public void PutDeviceToken() => RSClient.PutDeviceToken("ios_device_token");
         
         public void Initialize() =>
-            StartCoroutine(RSAnalytics.Initialize(writeKey.text,
-                new RSConfig(dataPlaneUrl: dataPlane.text)
+            RSAnalytics.Initialize("2OmDuHamX06zSuHObnMf8QQbvSW",
+                new RSConfig(dataPlaneUrl: "https://rudderstacz.dataplane.rudderstack.com")
                     .SetAutoCollectAdvertId(true)
                     .SetGzip(true)
-                    .SetRecordScreenViews(true)));
+                    .SetRecordScreenViews(true));
 
-        public void IdentifyUser() => RSAnalytics.Client.Identify(userID.text, new Dict());
-        public void AliasUser()    => RSAnalytics.Client.Alias(newUserId.text);
+        public void IdentifyUser()
+        {
+            RSAnalytics.Client.Identify("ios_unity_user_id", new Dict());
+        }
+
+        public void AliasUser()    => RSAnalytics.Client.Alias("new_ios_unity_user_id");
         public void ResetUser()    => RSAnalytics.Client.Reset();
 
-        public void Track() =>
+        public void Track()
+        {
+            count++;
             RSAnalytics.Client.Track(
-                eventName.text,
-                new Dictionary<string, object> { { propertyType.text, propertyValue.text }, } );
+                $"Track {count}",
+                new Dictionary<string, object> { { "key_1", "value_1" }, });
+        }
 
-        public void Page() =>
+        public void Page()
+        {
+            count++;
             RSAnalytics.Client.Page(
-                eventName.text,
-                new Dictionary<string, object> { { propertyType.text, propertyValue.text }, } );
+                $"Page {count}",
+                new Dictionary<string, object> { { "key_1", "value_1" }, });
+        }
 
+        public void Screen()
+        {
+            count++;
+            RSAnalytics.Client.Screen(
+                $"Screen {count}",
+                new Dictionary<string, object> { { "key_1", "value_1" }, });
+        }
 
-        public void Group() =>
-            RSAnalytics.Client.Group(propertyValue.text, new Dict());
+        public void Group()
+        {
+            RSAnalytics.Client.Group("group_id", new Dict());
+        }
 
         public void SwitchScene() => SceneManager.LoadScene("RudderStack/RudderAnalytics SDK/Examples/Example 1");
 
