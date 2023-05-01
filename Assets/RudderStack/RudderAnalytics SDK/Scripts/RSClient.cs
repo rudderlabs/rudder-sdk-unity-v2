@@ -102,6 +102,10 @@ namespace RudderStack.Unity
 
         public void Identify(string userId, IDictionary<string, object> traits, RudderOptions options)
         {
+
+            if (string.IsNullOrEmpty(userId) && (options is null || string.IsNullOrEmpty(options.AnonymousId)))
+                throw new InvalidOperationException("Please supply a valid userId to Identify.");
+            
             UserId     = userId;
             UserTraits = traits;
             
@@ -193,16 +197,33 @@ namespace RudderStack.Unity
         {
             if (Config.GetAutoCollectAdvertId())
             {
-                var value = new Dict {
+                options.Context["device"] = new Dict {
+                    { "name", SystemInfo.deviceName},
+                    { "model", SystemInfo.deviceModel},
+                    { "id", SystemInfo.deviceUniqueIdentifier},
                     { "token", _deviceToken },
                     { "adTrackingEnabled", true },
                     { "advertisingId", _advertisingId },
                 };
+
+                options.Context["screen"] = new Dict
+                {
+                    { "density", UnityEngine.Screen.dpi },
+                    { "width", UnityEngine.Screen.width },
+                    { "height", UnityEngine.Screen.height },
+                };
                 
-                if (options.Context.ContainsKey("device"))
-                    options.Context["device"] = value;
-                else
-                    options.Context.Add("device", value);
+                options.Context["os"] = SystemInfo.operatingSystem;
+                //options.Context["locale"]   = Application.systemLanguage;
+                options.Context["timezone"] = TimeZoneInfo.Local.DisplayName;
+                
+                /*
+                options.Context["externalId"] = new Dict
+                {
+                    { "name", "Rudd" },
+                    { "version", RudderAnalytics.VERSION },
+                };
+                */
             }
 
             options.Context.Add("traits", UserTraits);
@@ -244,7 +265,7 @@ namespace RudderStack.Unity
             //Flush();
             FlushAsync().GetAwaiter().OnCompleted(() =>
             {
-                AnonymousId = Guid.NewGuid().ToString();
+                //AnonymousId = Guid.NewGuid().ToString();
             
                 PlayerPrefs.DeleteKey(UserIdKey);
                 PlayerPrefs.DeleteKey(TraitsKey);

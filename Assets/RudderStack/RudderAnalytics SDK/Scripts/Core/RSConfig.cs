@@ -5,6 +5,8 @@ namespace RudderStack.Unity
     public class RSConfig : RudderConfig
     {
         private bool _autoCollectAdvertId;
+        private bool _recordScreenViews;
+        private bool _trackLifeCycleEvents = true;
 
         public RSConfig
         (
@@ -25,6 +27,28 @@ namespace RudderStack.Unity
             userAgent, maxRetryTime)
         {
             _autoCollectAdvertId = autoCollectAdvertId;
+        }
+
+        public RSConfig SetTrackLifeCycleEvents(bool track)
+        {
+            _trackLifeCycleEvents = track;
+            return this;
+        }
+
+        public bool GetTrackLifeCycleEvents()
+        {
+            return _trackLifeCycleEvents;
+        }
+        
+        public RSConfig SetRecordScreenViews(bool record)
+        {
+            _recordScreenViews = record;
+            return this;
+        }
+
+        public bool GetRecordScreenViews()
+        {
+            return _recordScreenViews;
         }
 
         public RSConfig SetAutoCollectAdvertId(bool newSendStatus)

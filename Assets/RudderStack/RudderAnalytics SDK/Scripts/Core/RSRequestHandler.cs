@@ -11,6 +11,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using RudderStack.Exception;
 using RudderStack.Model;
 using RudderStack.Request;
@@ -103,7 +104,13 @@ namespace RudderStack.Unity
                 // set the current request time
                 batch.SentAt = DateTime.UtcNow.ToString("o");
 
-                var json = JsonConvert.SerializeObject(batch);
+                var jobject = JObject.FromObject(batch);
+                
+                foreach (var item in jobject["batch"]) 
+                    item["sentAt"] = batch.SentAt;
+
+                var json    = JsonConvert.SerializeObject(batch);
+                json = jobject.ToString();
 
                 // Basic Authentication
 #if NET35

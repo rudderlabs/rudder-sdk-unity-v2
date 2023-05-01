@@ -1,10 +1,16 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using RudderStack.Model;
 using UnityEngine;
 
 namespace RudderStack.Unity
 {
     public class RSMaster : MonoBehaviour
     {
-        private static bool _alreadyExists;
+        private static bool   _alreadyExists;
+        private const  string lastSavedVersionKey = "rudderstack-last-version";
+        private const  string installedKey        = "rudderstack-install-reported";
         
         private void Awake()
         {
@@ -16,6 +22,45 @@ namespace RudderStack.Unity
             {
                 DontDestroyOnLoad(gameObject);
                 _alreadyExists = true;
+            }
+        }
+
+        private IEnumerator Start()
+        {
+            yield return new WaitUntil(() => RSAnalytics.Client != null);
+
+            if (RSAnalytics.Client.Config.GetTrackLifeCycleEvents() == false) yield break;
+
+            if (!PlayerPrefs.HasKey(installedKey))
+            {
+                PlayerPrefs.SetInt(installedKey, 1);
+                RSAnalytics.Client.Track("Application Installed", new Dict { { "version", Application.version } });
+            }
+
+            var prevVersion = PlayerPrefs.GetString(lastSavedVersionKey);
+            if (string.Compare(Application.version, prevVersion, StringComparison.Ordinal) > 0)
+            {
+                RSAnalytics.Client.Track("Application Updated",
+                    new Dict { { "previous_version", prevVersion }, { "version", Application.version } });
+                PlayerPrefs.SetString(lastSavedVersionKey, Application.version);
+            }
+
+            RSAnalytics.Client.Track("Application Opened",
+                new Dict { { "version", Application.version }, { "from_background", false } });
+        }
+
+        private void OnApplicationPause(bool pauseStatus)
+        {
+            if (RSAnalytics.Client == null || !RSAnalytics.Client.Config.GetTrackLifeCycleEvents()) return;
+            
+            if (pauseStatus)
+            {
+                RSAnalytics.Client.Track("Application Backgrounded");
+            }
+            else
+            {
+                RSAnalytics.Client.Track("Application Opened",
+                    new Dict { { "version", Application.version }, { "from_background", true } });
             }
         }
 

@@ -18,7 +18,7 @@ namespace RudderStack.Unity
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            if (mode == LoadSceneMode.Single) 
+            if (mode == LoadSceneMode.Single && RSAnalytics.Client.Config.GetRecordScreenViews()) 
                 RSAnalytics.Client.Screen(scene.name);
         }
     }

@@ -8,4 +8,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/RudderStack/RudderAnalytics SDK/Examples/Example.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/RudderStack/RudderAnalytics SDK/Examples/Example 1.unity
+    guid: 900fa178521e0104b8432c47f89425fe
   m_configObjects: {}

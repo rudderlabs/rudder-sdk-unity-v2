@@ -41,8 +41,11 @@ namespace Examples.RudderStack.Unity
         public void PutDeviceToken() => RSClient.PutDeviceToken(deviceToken.text);
         
         public void Initialize() =>
-            RSAnalytics.Initialize(writeKey.text,
-                new RSConfig(dataPlaneUrl: dataPlane.text).SetAutoCollectAdvertId(true).SetGzip(true));
+            StartCoroutine(RSAnalytics.Initialize(writeKey.text,
+                new RSConfig(dataPlaneUrl: dataPlane.text)
+                    .SetAutoCollectAdvertId(true)
+                    .SetGzip(true)
+                    .SetRecordScreenViews(true)));
 
         public void IdentifyUser() => RSAnalytics.Client.Identify(userID.text, new Dict());
         public void AliasUser()    => RSAnalytics.Client.Alias(newUserId.text);
@@ -58,6 +61,9 @@ namespace Examples.RudderStack.Unity
                 eventName.text,
                 new Dictionary<string, object> { { propertyType.text, propertyValue.text }, } );
 
+
+        public void Group() =>
+            RSAnalytics.Client.Group(propertyValue.text, new Dict());
 
         public void SwitchScene() => SceneManager.LoadScene("RudderStack/RudderAnalytics SDK/Examples/Example 1");
 
