@@ -21,7 +21,8 @@ namespace RudderStack.Unity
 
         private void OnApplicationQuit()
         {
-            RSAnalytics.Dispose();
+            if (RSAnalytics.Client != null) 
+                RSAnalytics.Dispose();
         }
 
 #if UNITY_EDITOR
