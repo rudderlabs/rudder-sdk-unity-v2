@@ -24,11 +24,9 @@ namespace Examples.RudderStack.Unity
         public void PutDeviceToken() => RSClient.PutDeviceToken("ios_device_token");
 
         public void Initialize() =>
-            RSAnalytics.Initialize("2OmDuHamX06zSuHObnMf8QQbvSW",
+            StartCoroutine(RSAnalytics.Initialize("2OmDuHamX06zSuHObnMf8QQbvSW",
                 new RSConfig(dataPlaneUrl: "https://rudderstacz.dataplane.rudderstack.com")
-                    .SetAutoCollectAdvertId(true)
-                    .SetGzip(true)
-                    .SetTrackLifeCycleEvents(true));
+                    .SetTrackLifeCycleEvents(false)));
 
         public void IdentifyUser()
         {
