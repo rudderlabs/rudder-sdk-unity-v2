@@ -2,18 +2,24 @@ using System;
 
 namespace RudderStack.Unity
 {
-    public class RSConfig : RudderConfig
+    public class RSConfig
     {
-        private bool _autoCollectAdvertId;
-        private bool _recordScreenViews;
-        private bool _trackLifeCycleEvents = true;
+        private string       _controlPlaneUrl;
+        private bool         _autoCollectAdvertId;
+        private bool         _recordScreenViews;
+        private int          _dbThresholdCount     = 1000;
+        private Logger.Level _logLevel             = Logger.Level.INFO;
+        private bool         _trackLifeCycleEvents = true;
+
+        public RudderConfig Inner { get; private set; }
+
 
         public RSConfig
         (
             string    dataPlaneUrl        = "https://hosted.rudderlabs.com",
             string    proxy               = null,
             TimeSpan? timeout             = null,
-            int       maxQueueSize        = 10000,
+            int       maxQueueSize        = 30,
             int       flushAt             = 20,
             bool      async               = true,
             int       threads             = 1,
@@ -23,11 +29,52 @@ namespace RudderStack.Unity
             string    userAgent           = null,
             TimeSpan? maxRetryTime        = null,
             bool      autoCollectAdvertId = false
-        ) : base(dataPlaneUrl, proxy, timeout, maxQueueSize, flushAt, async, threads, flushInterval, gzip, send,
-            userAgent, maxRetryTime)
+        )
         {
+            Inner = new RudderConfig(
+                dataPlaneUrl,
+                proxy,
+                timeout,
+                maxQueueSize,
+                flushAt,
+                async,
+                threads,
+                flushInterval,
+                gzip,
+                send,
+                userAgent,
+                maxRetryTime);
             _autoCollectAdvertId = autoCollectAdvertId;
         }
+
+        public RSConfig(RudderConfig config)
+        {
+            Inner = config;
+        }
+
+        public RSConfig SetDbThresholdCount(int count)
+        {
+            _dbThresholdCount = count;
+            return this;
+        }
+
+        public int GetDbThresholdCount() => _dbThresholdCount;
+        
+        public RSConfig SetControlPlaneUrl(string url)
+        {
+            _controlPlaneUrl = url;
+            return this;
+        }
+
+        public string GetControlPlaneUrl() => _controlPlaneUrl;
+
+        public RSConfig SetLogLevel(Logger.Level level)
+        {
+            _logLevel = level;
+            return this;
+        }
+
+        public Logger.Level GetLogLevel() => _logLevel;
 
         public RSConfig SetTrackLifeCycleEvents(bool track)
         {
@@ -35,109 +82,108 @@ namespace RudderStack.Unity
             return this;
         }
 
-        public bool GetTrackLifeCycleEvents()
-        {
-            return _trackLifeCycleEvents;
-        }
-        
+        public bool GetTrackLifeCycleEvents() => _trackLifeCycleEvents;
+
         public RSConfig SetRecordScreenViews(bool record)
         {
             _recordScreenViews = record;
             return this;
         }
 
-        public bool GetRecordScreenViews()
-        {
-            return _recordScreenViews;
-        }
+        public bool GetRecordScreenViews() => _recordScreenViews;
 
-        public RSConfig SetAutoCollectAdvertId(bool newSendStatus)
+        public RSConfig SetAutoCollectAdvertId(bool collect)
         {
-            _autoCollectAdvertId = newSendStatus;
+            _autoCollectAdvertId = collect;
             return this;
         }
 
-        public bool GetAutoCollectAdvertId()
-        {
-            return _autoCollectAdvertId;
-        }
+        public bool GetAutoCollectAdvertId() => _autoCollectAdvertId;
 
         /// <summary>
         /// Set the API host server address, instead of default server "https://hosted.rudderlabs.com"
         /// </summary>
         /// <param name="host">Host server url</param>
         /// <returns></returns>
-        public new RSConfig SetHost(string host)
+        public RSConfig SetHost(string host)
         {
-            this.DataPlaneUrl = host;
+            Inner.SetHost(host);
             return this;
         }
+        public string GetHost() => Inner.GetHost();
 
         /// <summary>
         /// Set the proxy server Uri
         /// </summary>
         /// <param name="proxy">Proxy server Uri</param>
         /// <returns></returns>
-        public new RSConfig SetProxy(string proxy)
+        public RSConfig SetProxy(string proxy)
         {
-            this.Proxy = proxy;
+            Inner.SetProxy(proxy);
             return this;
         }
+        public string GetProxy() => Inner.GetProxy();
 
         /// <summary>
         /// Sets the maximum amount of timeout on the HTTP request flushes to the server.
         /// </summary>
         /// <param name="timeout"></param>
         /// <returns></returns>
-        public new RSConfig SetTimeout(TimeSpan timeout)
+        public RSConfig SetTimeout(TimeSpan timeout)
         {
-            this.Timeout = timeout;
+            Inner.SetTimeout(timeout);
             return this;
         }
+        public TimeSpan GetTimeout() => Inner.GetTimeout();
 
         /// <summary>
         /// Sets the maximum amount of retry time for request to flush to the server when Timeout or error occurs.
         /// </summary>
         /// <param name="maxRetryTime"></param>
         /// <returns></returns>
-        public new RSConfig SetMaxRetryTime(TimeSpan maxRetryTime)
+        public RSConfig SetMaxRetryTime(TimeSpan maxRetryTime)
         {
-            this.MaxRetryTime = maxRetryTime;
+            Inner.SetMaxRetryTime(maxRetryTime);
             return this;
         }
+        public TimeSpan? GetMaxRetryTime() => Inner.GetMaxRetryTime();
 
         /// <summary>
         /// Sets the maximum amount of items that can be in the queue before no more are accepted.
         /// </summary>
         /// <param name="maxQueueSize"></param>
         /// <returns></returns>
-        public new RSConfig SetMaxQueueSize(int maxQueueSize)
+        public RSConfig SetFlushQueueSize(int maxQueueSize)
         {
-            this.MaxQueueSize = maxQueueSize;
+            Inner.SetMaxQueueSize(maxQueueSize);
             return this;
         }
+
+        public int GetFlushQueueSize() => Inner.GetMaxQueueSize();
 
         /// <summary>
         /// Sets the maximum amount of messages to send per batch
         /// </summary>
         /// <param name="flushAt"></param>
         /// <returns></returns>
-        public new RSConfig SetFlushAt(int flushAt)
+        public RSConfig SetFlushAt(int flushAt)
         {
-            this.FlushAt = flushAt;
+            Inner.SetFlushAt(flushAt);
             return this;
         }
+        public int GetFlushAt() => Inner.GetFlushAt();
 
         /// <summary>
         /// Count of concurrent internal threads to post data from queue
         /// </summary>
         /// <param name="threads"></param>
         /// <returns></returns>
-        public new RSConfig SetThreads(int threads)
+        public RSConfig SetThreads(int threads)
         {
-            Threads = threads;
+            Inner.SetThreads(threads);
             return this;
         }
+        public int GetThreads() => Inner.GetThreads();
 
         /// <summary>
         /// Sets whether the flushing to the server is synchronous or asynchronous.
@@ -151,11 +197,12 @@ namespace RudderStack.Unity
         /// </summary>
         /// <param name="async">True for async flushing, false for blocking flushing</param>
         /// <returns></returns>
-        public new RSConfig SetAsync(bool async)
+        public RSConfig SetAsync(bool async)
         {
-            this.Async = async;
+            Inner.SetAsync(async);
             return this;
         }
+        public bool GetAsync() => Inner.GetAsync();
 
         /// <summary>
         /// Sets the API request header uses GZip option.
@@ -164,38 +211,43 @@ namespace RudderStack.Unity
         /// </summary>
         /// <param name="gzip">True to compress request header, false for no compression</param>
         /// <returns></returns>
-        public new RSConfig SetGzip(bool gzip)
+        public RSConfig SetGzip(bool gzip)
         {
-            this.Gzip = gzip;
+            Inner.SetGzip(gzip);
             return this;
         }
+        public bool GetGzip() => Inner.GetGzip();
 
-        public new RSConfig SetUserAgent(string userAgent)
+        public RSConfig SetUserAgent(string userAgent)
         {
-            this.UserAgent = userAgent;
+            Inner.SetUserAgent(userAgent);
             return this;
         }
+        public string GetUserAgent() => Inner.GetUserAgent();
 
         /// <summary>
         /// Don’t send data to RudderStack
         /// </summary>
         /// <param name="send"></param>
         /// <returns></returns>
-        public new RSConfig SetSend(bool send)
+        public RSConfig SetSend(bool send)
         {
-            this.Send = send;
+            Inner.SetSend(send);
             return this;
         }
+        public bool GetSend() => Inner.GetSend();
 
         /// <summary>
         /// Set the interval in seconds at which the client should flush events. 
         /// </summary>
         /// <param name="interval"></param>
         /// <returns></returns>
-        public new RSConfig SetFlushInterval(double interval)
+        public RSConfig SetSleepCount(double interval)
         {
-            base.SetFlushInterval(interval);
+            Inner.SetFlushInterval(interval);
             return this;
         }
+
+        public double GetSleepCount() => Inner.GetFlushInterval();
     }
 }

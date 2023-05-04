@@ -25,24 +25,28 @@ namespace RudderStack.Unity
         private readonly List<BaseAction>        _queue;
         private readonly int                     _maxBatchSize;
         private readonly IBatchFactory           _batchFactory;
-        private readonly IRSRequestHandler    _requestHandler;
+        private readonly IRSRequestHandler       _requestHandler;
         private readonly int                     _maxQueueSize;
         private readonly CancellationTokenSource _continue;
         private readonly int                     _flushIntervalInMillis;
         private readonly int                     _threads;
         private readonly Semaphore               _semaphore;
         private          Timer                   _timer;
-        private readonly RSStorageManager          _storageManager;
+        private readonly RSStorageManager        _storageManager;
+        private readonly int                     _dbThresholdCount;
+        
+        private          bool                    requestFailed;
 
         internal RSFlushHandler(IBatchFactory batchFactory, IRequestHandler requestHandler, RSConfig config)
         {
             _queue                 = new List<BaseAction>();
             _batchFactory          = batchFactory;
             _requestHandler        = requestHandler as IRSRequestHandler;
-            _maxQueueSize          = config.MaxQueueSize;
-            _maxBatchSize          = config.FlushAt;
+            _maxQueueSize          = config.GetFlushQueueSize();
+            _maxBatchSize          = config.Inner.FlushAt;
+            _dbThresholdCount      = config.GetDbThresholdCount();
             _continue              = new CancellationTokenSource();
-            _flushIntervalInMillis = config.FlushIntervalInMillis;
+            _flushIntervalInMillis = config.Inner.FlushIntervalInMillis;
             _threads               = 1;
             _semaphore             = new Semaphore(_threads, _threads);
 
@@ -69,7 +73,6 @@ namespace RudderStack.Unity
         private void RunInterval()
         {
             var initialDelay = _queue.Count == 0 ? _flushIntervalInMillis : 0;
-            initialDelay = _flushIntervalInMillis;
             _timer       = new Timer(async b => await PerformFlush(), new { }, initialDelay, _flushIntervalInMillis);
         }
 
@@ -155,10 +158,9 @@ namespace RudderStack.Unity
             requestFailed = false;
 
             // save to file
-            _storageManager.SaveToFile(_queue);
+            _storageManager.SaveToFile(_queue, _dbThresholdCount);
         }
 
-        private bool requestFailed;
 
         private void OnRequestCompleted(Batch batch, bool succeeded)
         {
@@ -187,7 +189,7 @@ namespace RudderStack.Unity
             _semaphore.WaitOne();
 
             _queue.Add(action);
-            _storageManager.SaveToFile(_queue);
+            _storageManager.SaveToFile(_queue, _dbThresholdCount);
 
             Logger.Debug("Enqueued action in async loop.", new Dict
             {
@@ -202,7 +204,7 @@ namespace RudderStack.Unity
             if (flushRequired)
             {
                 Logger.Debug("Queue is full. Performing a flush");
-                _ = PerformFlush();
+                _ = PerformFlush().ConfigureAwait(false);
             }
 
         }

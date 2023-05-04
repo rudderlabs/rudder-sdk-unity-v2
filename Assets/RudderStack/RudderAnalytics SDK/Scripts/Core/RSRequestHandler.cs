@@ -29,7 +29,7 @@ namespace RudderStack.Unity
         /// </summary>
         private RudderClient _client;
 
-        private readonly Backo _backo;
+        private readonly RSBacko _backo;
 
         private readonly int _maxBackOffDuration;
 
@@ -45,11 +45,11 @@ namespace RudderStack.Unity
         /// </summary>
         public TimeSpan Timeout { get; set; }
 
-        internal RSRequestHandler(TimeSpan timeout) : this(timeout, new Backo(max: 10000, jitter: 5000)) // Set maximum waiting limit to 10s and jitter to 5s
+        internal RSRequestHandler(TimeSpan timeout) : this(timeout, new RSBacko()) // Set maximum waiting limit to 10s and jitter to 5s
         {
         }
 
-        internal RSRequestHandler(TimeSpan timeout, Backo backo)
+        internal RSRequestHandler(TimeSpan timeout, RSBacko backo)
         {
             _backo  = backo;
             Timeout = timeout;
@@ -109,7 +109,7 @@ namespace RudderStack.Unity
                 foreach (var item in jobject["batch"]) 
                     item["sentAt"] = batch.SentAt;
 
-                var json    = JsonConvert.SerializeObject(batch);
+                var json = JsonConvert.SerializeObject(batch);
                 json = jobject.ToString();
 
                 // Basic Authentication
@@ -226,7 +226,7 @@ namespace RudderStack.Unity
 #else
                     watch.Start();
 
-                    ByteArrayContent content = new ByteArrayContent(requestData);
+                    var content = new ByteArrayContent(requestData);
                     content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
                     if (_client.Config.Gzip)
                     {
@@ -234,7 +234,7 @@ namespace RudderStack.Unity
                     }
 
                     HttpResponseMessage response = null;
-                    bool                retry    = false;
+                    var                retry    = false;
                     try
                     {
                         response = await _httpClient.PostAsync(uri, content).ConfigureAwait(false);

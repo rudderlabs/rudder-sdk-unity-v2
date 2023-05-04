@@ -4,6 +4,7 @@ using RudderStack.Unity;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Logger = RudderStack.Logger;
 
 namespace Examples.RudderStack.Unity
 {
@@ -45,6 +46,8 @@ namespace Examples.RudderStack.Unity
                 new RSConfig(dataPlaneUrl: dataPlane.text)
                     .SetAutoCollectAdvertId(true)
                     .SetGzip(true)
+                    .SetLogLevel(Logger.Level.DEBUG)
+                    .SetControlPlaneUrl("https://api.rudderlabs.com")
                     .SetRecordScreenViews(true)));
 
         public void IdentifyUser() => RSAnalytics.Client.Identify(userID.text, new Dict());

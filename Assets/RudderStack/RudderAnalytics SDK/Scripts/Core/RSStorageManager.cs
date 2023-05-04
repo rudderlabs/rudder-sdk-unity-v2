@@ -64,15 +64,16 @@ namespace RudderStack.Unity.Utility
             return res;
         }
 
-        public void SaveToFile(List<BaseAction> actions)
+        public void SaveToFile(List<BaseAction> actions, int maxCount)
         {
             if (!Directory.Exists(_directoryPath))
                 Directory.CreateDirectory(_directoryPath);
-            
+
             Logger.Debug($"{actions.Count} actions saved to file.");
-            File.WriteAllText(_filePath, RSEncryptor.Encrypt(_encryptionKey, string.Join(
-                Environment.NewLine,
-                actions.Select(JsonConvert.SerializeObject))));
+            File.WriteAllText(_filePath,
+                RSEncryptor.Encrypt(_encryptionKey,
+                    string.Join(Environment.NewLine,
+                        actions.Skip(Math.Max(0, actions.Count - maxCount)).Select(JsonConvert.SerializeObject))));
         }
     }
 }
