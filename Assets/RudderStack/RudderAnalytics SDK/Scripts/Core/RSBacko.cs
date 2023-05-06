@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace RudderStack.Request
+namespace RudderStack.Unity
 {
     public class RSBacko
     {
@@ -40,7 +40,7 @@ namespace RudderStack.Request
 
         public int AttemptTimeFor(int attempt)
         {
-            return Math.Min(_max, attempt + 1);
+            return Math.Min(_max, (attempt + 1) * 1000);
         }
 
         public void Reset()

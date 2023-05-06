@@ -4,10 +4,10 @@ namespace RudderStack.Unity
 {
     public class RSConfig
     {
-        private string       _controlPlaneUrl;
+        private string       _controlPlaneUrl = "https://api.rudderlabs.com";
         private bool         _autoCollectAdvertId;
         private bool         _recordScreenViews;
-        private int          _dbThresholdCount     = 1000;
+        private int          _dbThresholdCount     = 10000;
         private Logger.Level _logLevel             = Logger.Level.INFO;
         private bool         _trackLifeCycleEvents = true;
 
@@ -19,11 +19,11 @@ namespace RudderStack.Unity
             string    dataPlaneUrl        = "https://hosted.rudderlabs.com",
             string    proxy               = null,
             TimeSpan? timeout             = null,
-            int       maxQueueSize        = 30,
+            int       flushQueueSize        = 30,
             int       flushAt             = 20,
             bool      async               = true,
             int       threads             = 1,
-            double    flushInterval       = 10.0,
+            double    sleepCount       = 10.0,
             bool      gzip                = true,
             bool      send                = true,
             string    userAgent           = null,
@@ -35,11 +35,11 @@ namespace RudderStack.Unity
                 dataPlaneUrl,
                 proxy,
                 timeout,
-                maxQueueSize,
+                flushQueueSize,
                 flushAt,
                 async,
                 threads,
-                flushInterval,
+                sleepCount,
                 gzip,
                 send,
                 userAgent,
@@ -151,11 +151,11 @@ namespace RudderStack.Unity
         /// <summary>
         /// Sets the maximum amount of items that can be in the queue before no more are accepted.
         /// </summary>
-        /// <param name="maxQueueSize"></param>
+        /// <param name="flushQueueSize"></param>
         /// <returns></returns>
-        public RSConfig SetFlushQueueSize(int maxQueueSize)
+        public RSConfig SetFlushQueueSize(int flushQueueSize)
         {
-            Inner.SetMaxQueueSize(maxQueueSize);
+            Inner.SetMaxQueueSize(flushQueueSize);
             return this;
         }
 
@@ -240,11 +240,11 @@ namespace RudderStack.Unity
         /// <summary>
         /// Set the interval in seconds at which the client should flush events. 
         /// </summary>
-        /// <param name="interval"></param>
+        /// <param name="count"></param>
         /// <returns></returns>
-        public RSConfig SetSleepCount(double interval)
+        public RSConfig SetSleepCount(double count)
         {
-            Inner.SetFlushInterval(interval);
+            Inner.SetFlushInterval(count);
             return this;
         }
 
