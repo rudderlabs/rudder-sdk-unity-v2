@@ -69,11 +69,13 @@ namespace RudderStack.Unity.Utility
             if (!Directory.Exists(_directoryPath))
                 Directory.CreateDirectory(_directoryPath);
 
-            Logger.Debug($"{actions.Count} actions saved to file.");
+            var count = Math.Min(actions.Count, maxCount);
+            
+            Logger.Debug($"{count} actions saved to file" + (count < actions.Count ? $", {actions.Count - count} dropped." : "." ));
             File.WriteAllText(_filePath,
                 RSEncryptor.Encrypt(_encryptionKey,
                     string.Join(Environment.NewLine,
-                        actions.Skip(Math.Max(0, actions.Count - maxCount)).Select(JsonConvert.SerializeObject))));
+                        actions.Skip(Math.Max(0, actions.Count - count)).Select(JsonConvert.SerializeObject))));
         }
     }
 }

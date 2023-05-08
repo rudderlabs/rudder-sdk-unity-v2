@@ -76,6 +76,9 @@ namespace RudderStack.Unity
 
         private static IEnumerator FetchConfig(RSConfig config, string writeKey, Action<RSSourceConfig> callback)
         {
+            if (string.IsNullOrEmpty(config.GetControlPlaneUrl()))
+                throw new ArgumentException($"Invalid URL {config}");
+            
             var uri = $"{config.GetControlPlaneUrl()}/sourceConfig?p=unity&v={VERSION}&w={writeKey}";
 
             using var webRequest = UnityWebRequest.Get(uri);
@@ -90,7 +93,7 @@ namespace RudderStack.Unity
                 case UnityWebRequest.Result.DataProcessingError:
                 case UnityWebRequest.Result.ProtocolError:
                     Debug.LogError($"ERROR: {webRequest.error}\n Message: {webRequest.downloadHandler.text}");
-                    break;
+                    throw new ArgumentException($"Invalid URL {config}");
                 case UnityWebRequest.Result.Success:
                     callback.Invoke(JsonConvert.DeserializeObject<RSSourceConfig>(webRequest.downloadHandler.text));
                     break;

@@ -104,13 +104,16 @@ namespace RudderStack.Unity
                 // set the current request time
                 batch.SentAt = DateTime.UtcNow.ToString("o");
 
-                var jobject = JObject.FromObject(batch);
+                var jObject = JObject.FromObject(batch);
                 
-                foreach (var item in jobject["batch"]) 
+                foreach (var item in jObject["batch"])
+                {
                     item["sentAt"] = batch.SentAt;
+                    if (string.IsNullOrEmpty(item["userId"]?.Value<string>())) 
+                        item["userId"].Parent.Remove();
+                }
 
-                var json = JsonConvert.SerializeObject(batch);
-                json = jobject.ToString();
+                var json = jObject.ToString();
 
                 // Basic Authentication
 #if NET35
@@ -234,7 +237,7 @@ namespace RudderStack.Unity
                     }
 
                     HttpResponseMessage response = null;
-                    var                retry    = false;
+                    var                 retry    = false;
                     try
                     {
                         response = await _httpClient.PostAsync(uri, content).ConfigureAwait(false);

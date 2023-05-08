@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using RudderStack.Model;
 using RudderStack.Stats;
+using TimeZoneConverter;
 using UnityEngine;
 
 namespace RudderStack.Unity
@@ -41,7 +42,7 @@ namespace RudderStack.Unity
                 PlayerPrefs.SetString(TraitsKey, JsonConvert.SerializeObject(value));
             }
         }
-
+        
         public static string AnonymousId
         {
             get => _anonymousId;
@@ -97,12 +98,12 @@ namespace RudderStack.Unity
         }
 
         public void Identify(string userId) =>
-            Identify(userId, null, new RudderOptions());
+            Identify(userId, null, new RSOptions());
         
         public void Identify(string userId, IDictionary<string, object> traits) =>
-            Identify(userId, traits, new RudderOptions());
+            Identify(userId, traits, new RSOptions());
 
-        public void Identify(string userId, IDictionary<string, object> traits, RudderOptions options)
+        public void Identify(string userId, IDictionary<string, object> traits, RSOptions options)
         {
 
             if (string.IsNullOrEmpty(userId) && (options is null || string.IsNullOrEmpty(options.AnonymousId)))
@@ -112,105 +113,115 @@ namespace RudderStack.Unity
             UserTraits = traits;
             
             SetAdditionalValues(options);
-            Inner.Identify(userId, traits, options);
+            Inner.Identify(userId, traits, options.Inner);
         }
 
 
         public void Group(string groupId) =>
-            Group(groupId, null, new RudderOptions());
+            Group(groupId, null, new RSOptions());
         
-        public void Group(string groupId, RudderOptions options) =>
+        public void Group(string groupId, RSOptions options) =>
             Group(groupId, null, options);
 
         public void Group(string groupId, IDictionary<string, object> traits) =>
-            Group(groupId, traits, new RudderOptions());
+            Group(groupId, traits, new RSOptions());
 
-        public void Group(string groupId, IDictionary<string, object> traits, RudderOptions options)
+        public void Group(string groupId, IDictionary<string, object> traits, RSOptions options)
         {
             SetAdditionalValues(options);
-            Inner.Group(UserId, groupId, traits, options);
+            Inner.Group(UserId, groupId, traits, options.Inner);
         }
 
         public void Track(string eventName) =>
-            Track(eventName, null, new RudderOptions());
+            Track(eventName, null, new RSOptions());
 
         public void Track(string eventName, IDictionary<string, object> properties) =>
-            Track(eventName, properties, new RudderOptions());
+            Track(eventName, properties, new RSOptions());
 
-        public void Track(string eventName, RudderOptions options) =>
-            Track(eventName, null, new RudderOptions());
+        public void Track(string eventName, RSOptions options) =>
+            Track(eventName, null, new RSOptions());
 
-        public void Track(string eventName, IDictionary<string, object> properties, RudderOptions options)
+        public void Track(string eventName, IDictionary<string, object> properties, RSOptions options)
         {
             SetAdditionalValues(options);
-            Inner.Track(UserId, eventName, properties, options);
+            Inner.Track(UserId, eventName, properties, options.Inner);
         }
 
         public void Alias(string userId) =>
-            Alias(userId, new RudderOptions());
+            Alias(userId, new RSOptions());
 
-        public void Alias(string userId, RudderOptions options)
+        public void Alias(string userId, RSOptions options)
         {
             SetAdditionalValues(options);
-            Inner.Alias(UserId, userId, options);
+            Inner.Alias(UserId, userId, options.Inner);
             UserId = userId;
         }
 
         public void Page(string name) =>
-            Page(name, null, null, new RudderOptions());
+            Page(name, null, null, new RSOptions());
 
-        public void Page(string name, RudderOptions options) =>
+        public void Page(string name, RSOptions options) =>
             Page(name, null, null, options);
 
         public void Page(string name, string category) =>
-            Page(name, category, null, new RudderOptions());
+            Page(name, category, null, new RSOptions());
 
         public void Page(string name, IDictionary<string, object> properties) =>
-            Page(name, null, properties, new RudderOptions());
+            Page(name, null, properties, new RSOptions());
 
-        public void Page(string name, IDictionary<string, object> properties, RudderOptions options) =>
+        public void Page(string name, IDictionary<string, object> properties, RSOptions options) =>
             Page(name, null, properties, options);
 
-        public void Page(string name, string category, IDictionary<string, object> properties, RudderOptions options)
+        public void Page(string name, string category, IDictionary<string, object> properties, RSOptions options)
         {
             SetAdditionalValues(options);
-            Inner.Page(UserId, name, category, properties, options);
+            Inner.Page(UserId, name, category, properties, options.Inner);
         }
 
         public void Screen(string name) =>
-            Screen(name, null, null, new RudderOptions());
+            Screen(name, null, null, new RSOptions());
 
-        public void Screen(string name, RudderOptions options) =>
+        public void Screen(string name, RSOptions options) =>
             Screen(name, null, null, options);
 
         public void Screen(string name, string category) =>
-            Screen(name, category, null, new RudderOptions());
+            Screen(name, category, null, new RSOptions());
 
         public void Screen(string name, IDictionary<string, object> properties) =>
-            Screen(name, null, properties, new RudderOptions());
+            Screen(name, null, properties, new RSOptions());
 
-        public void Screen(string name, IDictionary<string, object> properties, RudderOptions options) =>
+        public void Screen(string name, IDictionary<string, object> properties, RSOptions options) =>
             Screen(name, null, properties, options);
 
-        public void Screen(string name, string category, IDictionary<string, object> properties, RudderOptions options)
+        public void Screen(string name, string category, IDictionary<string, object> properties, RSOptions options)
         {
             SetAdditionalValues(options);
-            Inner.Screen(UserId, name, category, properties, options);
+            Inner.Screen(UserId, name, category, properties, options.Inner);
         }
 
-        private void SetAdditionalValues(RudderOptions options)
+        private void SetAdditionalValues(RSOptions options)
         {
+            var device = new Dict()
+            {
+                { "name", SystemInfo.deviceName },
+                { "model", SystemInfo.deviceModel },
+                { "type", SystemInfo.deviceType },
+                { "id", SystemInfo.deviceUniqueIdentifier },
+                { "adTrackingEnabled", Config.GetAutoCollectAdvertId() },
+            };
+            
             if (Config.GetAutoCollectAdvertId())
             {
-                options.Context["device"] = new Dict {
-                    { "name", SystemInfo.deviceName},
-                    { "model", SystemInfo.deviceModel},
-                    { "id", SystemInfo.deviceUniqueIdentifier},
-                    { "token", _deviceToken },
-                    { "adTrackingEnabled", true },
-                    { "advertisingId", _advertisingId },
-                };
+                if (!string.IsNullOrEmpty(_advertisingId)) 
+                    device["advertisingId"] = _advertisingId;
+                
+                if (!string.IsNullOrEmpty(_deviceToken)) 
+                    device["token"] = _deviceToken;
+
             }
+
+            options.Context["device"] = device;
+            
             
             options.Context["screen"] = new Dict
             {
@@ -226,13 +237,16 @@ namespace RudderStack.Unity
                 
             options.Context["library"] = new Dict
             {
-                { "name", "RudderAnalyticsUnity" },
+                { "name", "rudder-unity-library" },
                 { "version", RSAnalytics.VERSION },
             };
                 
-            options.Context["timezone"] = TimeZoneInfo.Local.DisplayName;
-                
-            options.Context.Add("traits", UserTraits);
+            options.Context["timezone"] = TZConvert.WindowsToIana(TimeZoneInfo.Local.StandardName);
+
+            if (UserTraits != null)
+            {
+                options.Context.Add("traits", UserTraits);
+            }
             options.SetAnonymousId(AnonymousId);
         }
 
