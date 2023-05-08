@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using RudderStack.Model;
@@ -201,27 +202,24 @@ namespace RudderStack.Unity
 
         private void SetAdditionalValues(RSOptions options)
         {
+            var osName = SystemInfo.operatingSystem;
+            
             var device = new Dict()
             {
                 { "name", SystemInfo.deviceName },
                 { "model", SystemInfo.deviceModel },
-                { "type", SystemInfo.deviceType },
+                { "type", osName.Substring(0, osName.IndexOf(' ')) },
                 { "id", SystemInfo.deviceUniqueIdentifier },
                 { "adTrackingEnabled", Config.GetAutoCollectAdvertId() },
             };
             
-            if (Config.GetAutoCollectAdvertId())
-            {
-                if (!string.IsNullOrEmpty(_advertisingId)) 
-                    device["advertisingId"] = _advertisingId;
-                
-                if (!string.IsNullOrEmpty(_deviceToken)) 
-                    device["token"] = _deviceToken;
-
-            }
+            if (!string.IsNullOrEmpty(_deviceToken)) 
+                device["token"] = _deviceToken;
+            
+            if (Config.GetAutoCollectAdvertId() && !string.IsNullOrEmpty(_advertisingId)) 
+                device["advertisingId"] = _advertisingId;
 
             options.Context["device"] = device;
-            
             
             options.Context["screen"] = new Dict
             {
@@ -232,7 +230,7 @@ namespace RudderStack.Unity
                 
             options.Context["os"] = new Dict
             {
-                { "name", SystemInfo.operatingSystem },
+                { "name", osName },
             };
                 
             options.Context["library"] = new Dict
@@ -240,8 +238,8 @@ namespace RudderStack.Unity
                 { "name", "rudder-unity-library" },
                 { "version", RSAnalytics.VERSION },
             };
-                
-            options.Context["timezone"] = TZConvert.WindowsToIana(TimeZoneInfo.Local.StandardName);
+
+            options.Context["timezone"] = TZConvert.WindowsToIana(TimeZoneInfo.Local.Id);
 
             if (UserTraits != null)
             {
