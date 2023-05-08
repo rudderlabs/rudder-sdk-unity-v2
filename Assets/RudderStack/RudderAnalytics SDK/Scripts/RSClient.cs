@@ -17,8 +17,8 @@ namespace RudderStack.Unity
         private static string _advertisingId;
         private static string _deviceToken;
         
-        private string _userId;
-        private string _anonymousId;
+        private        string _userId;
+        private static string _anonymousId;
         
         private IDictionary<string, object> _userTraits;
 
@@ -42,7 +42,7 @@ namespace RudderStack.Unity
             }
         }
 
-        public string AnonymousId
+        public static string AnonymousId
         {
             get => _anonymousId;
             private set
@@ -71,12 +71,13 @@ namespace RudderStack.Unity
             add => Inner.Succeeded += value;
             remove => Inner.Succeeded -= value;
         }
-        
-        public RSClient(RudderClient innerClient)
+
+        public RSClient(RudderClient innerClient, RSConfig config)
         {
             Inner      = innerClient;
             UserId     = PlayerPrefs.GetString(UserIdKey);
             UserTraits = JsonConvert.DeserializeObject<IDictionary<string, object>>(PlayerPrefs.GetString(TraitsKey));
+            Config     = config;
 
             if (PlayerPrefs.HasKey(AnonIdKey))
                 _anonymousId = PlayerPrefs.GetString(AnonIdKey);
@@ -91,7 +92,8 @@ namespace RudderStack.Unity
 
         public RSConfig Config
         {
-            get => Inner.Config as RSConfig;
+            get;
+            private set;
         }
 
         public void Identify(string userId) =>
@@ -114,6 +116,9 @@ namespace RudderStack.Unity
         }
 
 
+        public void Group(string groupId) =>
+            Group(groupId, null, new RudderOptions());
+        
         public void Group(string groupId, RudderOptions options) =>
             Group(groupId, null, options);
 
@@ -205,27 +210,28 @@ namespace RudderStack.Unity
                     { "adTrackingEnabled", true },
                     { "advertisingId", _advertisingId },
                 };
-
-                options.Context["screen"] = new Dict
-                {
-                    { "density", UnityEngine.Screen.dpi },
-                    { "width", UnityEngine.Screen.width },
-                    { "height", UnityEngine.Screen.height },
-                };
-                
-                options.Context["os"] = SystemInfo.operatingSystem;
-                //options.Context["locale"]   = Application.systemLanguage;
-                options.Context["timezone"] = TimeZoneInfo.Local.DisplayName;
-                
-                /*
-                options.Context["externalId"] = new Dict
-                {
-                    { "name", "Rudd" },
-                    { "version", RudderAnalytics.VERSION },
-                };
-                */
             }
-
+            
+            options.Context["screen"] = new Dict
+            {
+                { "density", UnityEngine.Screen.dpi },
+                { "width", UnityEngine.Screen.width },
+                { "height", UnityEngine.Screen.height },
+            };
+                
+            options.Context["os"] = new Dict
+            {
+                { "name", SystemInfo.operatingSystem },
+            };
+                
+            options.Context["library"] = new Dict
+            {
+                { "name", "RudderAnalyticsUnity" },
+                { "version", RSAnalytics.VERSION },
+            };
+                
+            options.Context["timezone"] = TimeZoneInfo.Local.DisplayName;
+                
             options.Context.Add("traits", UserTraits);
             options.SetAnonymousId(AnonymousId);
         }
@@ -255,7 +261,7 @@ namespace RudderStack.Unity
             _deviceToken = deviceToken;
         }
 
-        public void SetAnonymousId(string newId)
+        public static void PutAnonymousId(string newId)
         {
             AnonymousId = newId;
         }

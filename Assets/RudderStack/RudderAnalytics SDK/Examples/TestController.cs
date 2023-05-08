@@ -4,6 +4,7 @@ using RudderStack.Unity;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Logger = RudderStack.Logger;
 
 namespace Examples.RudderStack.Unity
 {
@@ -17,7 +18,7 @@ namespace Examples.RudderStack.Unity
             Initialize();
         }
 
-        public void PutAnonymousId() => RSAnalytics.Client.SetAnonymousId("anonymous_id");
+        public void PutAnonymousId() => RSClient.PutAnonymousId("anonymous_id_3");
 
         public void PutAdvertisingId() => RSClient.PutAdvertisingId("ios_advertisement_id");
 
@@ -25,8 +26,10 @@ namespace Examples.RudderStack.Unity
 
         public void Initialize() =>
             StartCoroutine(RSAnalytics.Initialize("2OmDuHamX06zSuHObnMf8QQbvSW",
-                new RSConfig(dataPlaneUrl: "https://rudderstacz.dataplane.rudderstack.com")
-                    .SetTrackLifeCycleEvents(false)));
+                new RSConfig(dataPlaneUrl: "https://rudderstacz.rudderstack.com")
+                    .SetControlPlaneUrl("https://api.rudderlabs.com")
+                    .SetLogLevel(Logger.Level.DEBUG)
+                    .SetAutoCollectAdvertId(true)));
 
         public void IdentifyUser()
         {
@@ -88,9 +91,9 @@ namespace Examples.RudderStack.Unity
             RudderOptions rudderOptions = new RudderOptions();
             rudderOptions.SetIntegration("Firebase", true);
 
-            RSAnalytics.Client.Group("group_id",
-                new Dictionary<string, object> { { "key_1", "value_1" }, { "key_2", 4 }, { "key_3", 4.2 }, { "key_4", true } },
-                rudderOptions);
+            RSAnalytics.Client.Group("group_id");//,
+                //new Dictionary<string, object> { { "key_1", "value_1" }, { "key_2", 4 }, { "key_3", 4.2 }, { "key_4", true } },
+                //rudderOptions);
         }
 
         public void SwitchScene() => SceneManager.LoadScene("RudderStack/RudderAnalytics SDK/Examples/Example 1");

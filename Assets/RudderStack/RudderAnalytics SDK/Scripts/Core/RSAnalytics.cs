@@ -28,22 +28,22 @@ namespace RudderStack.Unity
             if (_client != null)
                 yield break;
             
-            if(string.IsNullOrEmpty(writeKey) || config is null || string.IsNullOrEmpty(config.DataPlaneUrl))
+            if(string.IsNullOrEmpty(writeKey) || config is null || string.IsNullOrEmpty(config.Inner.DataPlaneUrl))
                 throw new InvalidOperationException("Please supply a valid writeKey and config to initialize.");
 
-            yield return FetchConfig(writeKey, sourceConfig =>
+            yield return FetchConfig(config, writeKey, sourceConfig =>
             {
                 if (sourceConfig.source.enabled == false)
                     throw new InvalidOperationException("The RudderStack source is disabled!");
                 
                 IRSRequestHandler requestHandler;
-                if (config.Send)
+                if (config.Inner.Send)
                 {
-                    if (config.MaxRetryTime.HasValue)
-                        requestHandler = new RSRequestHandler(config.Timeout,
-                            new Backo(max: (Convert.ToInt32(config.MaxRetryTime.Value.TotalSeconds) * 1000), jitter: 5000));
+                    if (config.Inner.MaxRetryTime.HasValue)
+                        requestHandler = new RSRequestHandler(config.Inner.Timeout,
+                            new RSBacko(Convert.ToInt32(config.Inner.MaxRetryTime.Value.TotalSeconds) * 1000));
                     else
-                        requestHandler = new RSRequestHandler(config.Timeout);
+                        requestHandler = new RSRequestHandler(config.Inner.Timeout);
                 }
                 else
                 {
@@ -52,14 +52,12 @@ namespace RudderStack.Unity
 
                 IBatchFactory batchFactory = new SimpleBatchFactory(writeKey);
 
-                IAsyncFlushHandler flushHandler;
-
-                flushHandler = config.Async
+                IAsyncFlushHandler flushHandler = config.Inner.Async
                     ? new RSFlushHandler(batchFactory, requestHandler, config)
                     : new BlockingFlushHandler(batchFactory, requestHandler);
 
-                RudderAnalytics.Initialize(writeKey, config, flushHandler);
-                Client = new RSClient(RudderAnalytics.Client);
+                RudderAnalytics.Initialize(writeKey, config.Inner, flushHandler);
+                Client = new RSClient(RudderAnalytics.Client, config);
                 requestHandler.Init(RudderAnalytics.Client, new HttpClient());
             });
         }
@@ -67,7 +65,7 @@ namespace RudderStack.Unity
         public static void Initialize(RSClient client)
         {
             RudderAnalytics.Initialize(client.Inner);
-            Client = new RSClient(RudderAnalytics.Client);
+            Client = new RSClient(RudderAnalytics.Client, client.Config);
         }
 
         public static void Dispose()
@@ -76,9 +74,9 @@ namespace RudderStack.Unity
             Client.Dispose();
         }
 
-        public static IEnumerator FetchConfig(string writeKey, Action<RSSourceConfig> callback)
+        private static IEnumerator FetchConfig(RSConfig config, string writeKey, Action<RSSourceConfig> callback)
         {
-            var uri = $"https://api.rudderlabs.com/sourceConfig?p=unity&v={VERSION}&w={writeKey}";
+            var uri = $"{config.GetControlPlaneUrl()}/sourceConfig?p=unity&v={VERSION}&w={writeKey}";
 
             using var webRequest = UnityWebRequest.Get(uri);
 

@@ -6,14 +6,13 @@ namespace RudderStack.Unity
 {
     public class RSLogger : MonoBehaviour
     {
-        public Logger.Level minLevel = Logger.Level.DEBUG;
 
         private void OnEnable()  => Logger.Handlers += LoggingHandler;
         private void OnDisable() => Logger.Handlers -= LoggingHandler;
 
         private void LoggingHandler(Logger.Level level, string message, IDictionary<string, object> args)
         {
-            if (level < minLevel)
+            if (level < RSAnalytics.Client.Config.GetLogLevel())
                 return;
 
             if (args != null) 
