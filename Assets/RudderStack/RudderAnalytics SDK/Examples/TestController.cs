@@ -31,7 +31,7 @@ namespace Examples.RudderStack.Unity
                     .SetLogLevel(Logger.Level.DEBUG)
                     //.SetFlushQueueSize(4)
                     //.SetSleepCount(5)
-                    //.SetDbThresholdCount(2)
+                    //.SetDbThresholdCount(1)
                     ));
 
         public void IdentifyUser()
