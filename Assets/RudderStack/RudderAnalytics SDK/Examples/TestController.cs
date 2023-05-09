@@ -26,14 +26,17 @@ namespace Examples.RudderStack.Unity
 
         public void Initialize() =>
             StartCoroutine(RSAnalytics.Initialize("2OmDuHamX06zSuHObnMf8QQbvSW",
-                new RSConfig(dataPlaneUrl: "https://rudderstacz.rudderstack.com")
-                    .SetControlPlaneUrl("https://api.rudderlabs.com")
+                new RSConfig(dataPlaneUrl: "https://rudderstacz.dataplane.rudderstack.com")
+                    //.SetControlPlaneUrl("https://api.rudderlabs.com")
                     .SetLogLevel(Logger.Level.DEBUG)
-                    .SetAutoCollectAdvertId(true)));
+                    //.SetFlushQueueSize(4)
+                    //.SetSleepCount(5)
+                    //.SetDbThresholdCount(2)
+                    ));
 
         public void IdentifyUser()
         {
-            RudderOptions rudderOptions = new RudderOptions();
+            RSOptions rudderOptions = new RSOptions();
             rudderOptions.SetIntegration("Firebase", true);
 
             RSAnalytics.Client.Identify("ios_unity_user_id",
@@ -43,7 +46,7 @@ namespace Examples.RudderStack.Unity
 
         public void AliasUser()
         {
-            RudderOptions rudderOptions = new RudderOptions();
+            RSOptions rudderOptions = new RSOptions();
             rudderOptions.SetIntegration("Firebase", true);
 
             RSAnalytics.Client.Alias("new_ios_unity_user_id", rudderOptions);
@@ -54,7 +57,7 @@ namespace Examples.RudderStack.Unity
         public void Track()
         {
             count++;
-            RudderOptions rudderOptions = new RudderOptions();
+            RSOptions rudderOptions = new RSOptions();
             rudderOptions.SetIntegration("Firebase", true);
 
             RSAnalytics.Client.Track(
@@ -66,7 +69,7 @@ namespace Examples.RudderStack.Unity
         public void Page()
         {
             count++;
-            RudderOptions rudderOptions = new RudderOptions();
+            RSOptions rudderOptions = new RSOptions();
             rudderOptions.SetIntegration("Firebase", true);
 
             RSAnalytics.Client.Page(
@@ -78,7 +81,7 @@ namespace Examples.RudderStack.Unity
         public void Screen()
         {
             count++;
-            RudderOptions rudderOptions = new RudderOptions();
+            RSOptions rudderOptions = new RSOptions();
             rudderOptions.SetIntegration("Firebase", true);
 
             RSAnalytics.Client.Screen(
@@ -88,7 +91,7 @@ namespace Examples.RudderStack.Unity
 
         public void Group()
         {
-            RudderOptions rudderOptions = new RudderOptions();
+            RSOptions rudderOptions = new RSOptions();
             rudderOptions.SetIntegration("Firebase", true);
 
             RSAnalytics.Client.Group("group_id");//,
