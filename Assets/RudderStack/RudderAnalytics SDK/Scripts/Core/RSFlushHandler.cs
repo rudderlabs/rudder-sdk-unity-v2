@@ -6,7 +6,9 @@ using RudderStack.Flush;
 using RudderStack.Model;
 using RudderStack.Request;
 using RudderStack.Unity.Utility;
+using Unity.VisualScripting;
 using UnityEngine;
+using Timer = System.Threading.Timer;
 
 namespace RudderStack.Unity
 {
@@ -35,7 +37,7 @@ namespace RudderStack.Unity
         private readonly RSStorageManager        _storageManager;
         private readonly int                     _dbThresholdCount;
         
-        private          bool                    requestFailed;
+        private bool requestFailed;
 
         internal RSFlushHandler(IBatchFactory batchFactory, IRequestHandler requestHandler, RSConfig config)
         {
@@ -73,7 +75,7 @@ namespace RudderStack.Unity
         private void RunInterval()
         {
             var initialDelay = _queue.Count == 0 ? _flushIntervalInMillis : 0;
-            _timer       = new Timer(async b => await PerformFlush(), new { }, initialDelay, _flushIntervalInMillis);
+            _timer = new Timer(async b => await PerformFlush(), new { }, initialDelay, _flushIntervalInMillis);
         }
 
 
@@ -188,8 +190,11 @@ namespace RudderStack.Unity
 
             _semaphore.WaitOne();
 
-            _queue.Add(action);
-            _storageManager.SaveToFile(_queue, _dbThresholdCount);
+            if (_queue.Count < _dbThresholdCount)
+            {
+                _queue.Add(action);
+                _storageManager.SaveToFile(_queue, _dbThresholdCount);
+            }
 
             Logger.Debug("Enqueued action in async loop.", new Dict
             {
@@ -204,7 +209,7 @@ namespace RudderStack.Unity
             if (flushRequired)
             {
                 Logger.Debug("Queue is full. Performing a flush");
-                _ = PerformFlush().ConfigureAwait(false);
+                await PerformFlush();
             }
 
         }

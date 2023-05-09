@@ -436,7 +436,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Content: {fileID: 644775676}
-  m_Horizontal: 1
+  m_Horizontal: 0
   m_Vertical: 1
   m_MovementType: 1
   m_Elasticity: 0.1
@@ -1873,10 +1873,6 @@ PrefabInstance:
     - target: {fileID: 6940871710492531969, guid: e6aaab33b9e1cb048b025890faf86a7f, type: 3}
       propertyPath: m_text
       value: "Tester\u200B"
-      objectReference: {fileID: 0}
-    - target: {fileID: 7943604286237282014, guid: e6aaab33b9e1cb048b025890faf86a7f, type: 3}
-      propertyPath: m_Text
-      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 7943604286237282014, guid: e6aaab33b9e1cb048b025890faf86a7f, type: 3}
       propertyPath: m_Navigation.m_Mode
@@ -5187,10 +5183,6 @@ PrefabInstance:
     - target: {fileID: 6940871710492531969, guid: e6aaab33b9e1cb048b025890faf86a7f, type: 3}
       propertyPath: m_text
       value: "Aliased Tester\u200B"
-      objectReference: {fileID: 0}
-    - target: {fileID: 7943604286237282014, guid: e6aaab33b9e1cb048b025890faf86a7f, type: 3}
-      propertyPath: m_Text
-      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 7943604286237282014, guid: e6aaab33b9e1cb048b025890faf86a7f, type: 3}
       propertyPath: m_Navigation.m_Mode

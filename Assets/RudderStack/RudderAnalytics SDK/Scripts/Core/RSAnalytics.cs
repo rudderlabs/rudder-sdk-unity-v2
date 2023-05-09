@@ -22,7 +22,12 @@ namespace RudderStack.Unity
             private set => _client ??= value;
         }
 
-        public static IEnumerator Initialize(string writeKey, RSConfig config)
+        public static void Initialize(string writeKey, RSConfig config)
+        {
+            RSMaster.Instance.StartCoroutine(InitializeRoutine(writeKey, config));
+        }
+
+        public static IEnumerator InitializeRoutine(string writeKey, RSConfig config)
         {
             if (_client != null)
                 yield break;

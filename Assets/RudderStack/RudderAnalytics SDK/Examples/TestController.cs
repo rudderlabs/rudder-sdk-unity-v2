@@ -42,13 +42,14 @@ namespace Examples.RudderStack.Unity
         public void PutDeviceToken() => RSClient.PutDeviceToken(deviceToken.text);
         
         public void Initialize() =>
-            StartCoroutine(RSAnalytics.Initialize(writeKey.text,
+            RSAnalytics.Initialize(writeKey.text,
                 new RSConfig(dataPlaneUrl: dataPlane.text)
                     .SetAutoCollectAdvertId(true)
                     .SetGzip(true)
                     .SetLogLevel(Logger.Level.DEBUG)
                     .SetControlPlaneUrl("https://api.rudderlabs.com")
-                    .SetRecordScreenViews(true)));
+                    //.SetDbThresholdCount(1)
+                    .SetRecordScreenViews(true));
 
         public void IdentifyUser() => RSAnalytics.Client.Identify(userID.text, new Dict());
         public void AliasUser()    => RSAnalytics.Client.Alias(newUserId.text);

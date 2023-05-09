@@ -15,6 +15,7 @@ using Newtonsoft.Json.Linq;
 using RudderStack.Exception;
 using RudderStack.Model;
 using RudderStack.Request;
+using Debug = UnityEngine.Debug;
 using WebProxy = RudderStack.Request.WebProxy;
 
 
@@ -160,6 +161,7 @@ namespace RudderStack.Unity
 
                 while (!_backo.HasReachedMax)
                 {
+                    Debug.Log("War");
 #if NET35
                     watch.Start();
     

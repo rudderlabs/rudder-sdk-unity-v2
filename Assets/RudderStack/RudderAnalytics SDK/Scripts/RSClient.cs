@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using NodaTime;
 using RudderStack.Model;
 using RudderStack.Stats;
-using TimeZoneConverter;
 using UnityEngine;
 
 namespace RudderStack.Unity
@@ -213,11 +213,14 @@ namespace RudderStack.Unity
                 { "adTrackingEnabled", Config.GetAutoCollectAdvertId() },
             };
             
-            if (!string.IsNullOrEmpty(_deviceToken)) 
-                device["token"] = _deviceToken;
-            
-            if (Config.GetAutoCollectAdvertId() && !string.IsNullOrEmpty(_advertisingId)) 
-                device["advertisingId"] = _advertisingId;
+            if (Config.GetAutoCollectAdvertId())
+            {
+                if (!string.IsNullOrEmpty(_deviceToken)) 
+                    device["token"] = _deviceToken;
+                
+                if (!string.IsNullOrEmpty(_advertisingId)) 
+                    device["advertisingId"] = _advertisingId;
+            }
 
             options.Context["device"] = device;
             
@@ -239,8 +242,19 @@ namespace RudderStack.Unity
                 { "version", RSAnalytics.VERSION },
             };
 
-            options.Context["timezone"] = TZConvert.WindowsToIana(TimeZoneInfo.Local.Id);
+             var tz = DateTimeZoneProviders.Tzdb.GetSystemDefault();
+             options.Context["timezone"] = tz.Id;
 
+            /*
+            if (TZConvert.TryWindowsToIana(TimeZoneInfo.Local.Id, out var iana))
+                options.Context["timezone"] = iana;
+            else if (TZConvert.TryWindowsToIana(TimeZoneInfo.Local.StandardName, out iana))
+                options.Context["timezone"] = iana;
+            else if (TZConvert.TryWindowsToIana(TimeZoneInfo.Local.StandardName + " Standard Time", out iana))
+                options.Context["timezone"] = iana;
+            else
+                options.Context["timezone"] = TimeZoneInfo.Local.StandardName;
+            */
             if (UserTraits != null)
             {
                 options.Context.Add("traits", UserTraits);
