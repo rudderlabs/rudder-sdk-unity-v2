@@ -25,14 +25,14 @@ namespace Examples.RudderStack.Unity
         public void PutDeviceToken() => RSClient.PutDeviceToken("ios_device_token");
 
         public void Initialize() =>
-            StartCoroutine(RSAnalytics.Initialize("2OmDuHamX06zSuHObnMf8QQbvSW",
+            RSAnalytics.Initialize("2OmDuHamX06zSuHObnMf8QQbvSW",
                 new RSConfig(dataPlaneUrl: "https://rudderstacz.dataplane.rudderstack.com")
                     //.SetControlPlaneUrl("https://api.rudderlabs.com")
                     .SetLogLevel(Logger.Level.DEBUG)
                     //.SetFlushQueueSize(4)
                     //.SetSleepCount(5)
                     //.SetDbThresholdCount(1)
-                    ));
+                    );
 
         public void IdentifyUser()
         {

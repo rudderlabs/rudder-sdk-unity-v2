@@ -8,20 +8,27 @@ namespace RudderStack.Unity
 {
     public class RSMaster : MonoBehaviour
     {
-        private static bool   _alreadyExists;
         private const  string lastSavedVersionKey = "rudderstack-last-version";
         private const  string installedKey        = "rudderstack-install-reported";
+
+        private static bool opened;
+
+        public static RSMaster Instance
+        {
+            get;
+            private set;
+        }
         
         private void Awake()
         {
-            if (_alreadyExists)
+            if (Instance == null)
             {
-                Destroy(gameObject);
+                DontDestroyOnLoad(gameObject);
+                Instance = this;
             }
             else
             {
-                DontDestroyOnLoad(gameObject);
-                _alreadyExists = true;
+                Destroy(gameObject);
             }
         }
 
@@ -29,8 +36,10 @@ namespace RudderStack.Unity
         {
             yield return new WaitUntil(() => RSAnalytics.Client != null);
 
-            if (RSAnalytics.Client.Config.GetTrackLifeCycleEvents() == false) yield break;
+            if (RSAnalytics.Client.Config.GetTrackLifeCycleEvents() == false || opened) yield break;
 
+            opened = true;
+            
             if (!PlayerPrefs.HasKey(installedKey))
             {
                 PlayerPrefs.SetInt(installedKey, 1);
@@ -38,7 +47,7 @@ namespace RudderStack.Unity
             }
 
             var prevVersion = PlayerPrefs.GetString(lastSavedVersionKey);
-            if (string.Compare(Application.version, prevVersion, StringComparison.Ordinal) > 0)
+            if (!string.IsNullOrEmpty(prevVersion) && string.Compare(Application.version, prevVersion, StringComparison.Ordinal) > 0)
             {
                 RSAnalytics.Client.Track("Application Updated",
                     new Dict { { "previous_version", prevVersion }, { "version", Application.version } });
