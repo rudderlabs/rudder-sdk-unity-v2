@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -19,7 +20,7 @@ namespace RudderStack.Unity
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             if (mode == LoadSceneMode.Single && RSAnalytics.Client.Config.GetRecordScreenViews()) 
-                RSAnalytics.Client.Screen(scene.name);
+                RSAnalytics.Client.Screen(scene.name, new Dictionary<string, object> { { "automatic", true }});
         }
     }
 }
