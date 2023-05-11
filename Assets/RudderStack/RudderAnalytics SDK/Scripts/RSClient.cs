@@ -148,14 +148,14 @@ namespace RudderStack.Unity
             Inner.Track(UserId, eventName, properties, options.Inner);
         }
 
-        public void Alias(string userId) =>
-            Alias(userId, new RSOptions());
+        public void Alias(string newId) =>
+            Alias(newId, new RSOptions());
 
-        public void Alias(string userId, RSOptions options)
+        public void Alias(string newId, RSOptions options)
         {
             SetAdditionalValues(options);
-            Inner.Alias(UserId, userId, options.Inner);
-            UserId = userId;
+            Inner.Alias(UserId, newId, options.Inner);
+            UserId = newId;
         }
 
         public void Page(string name) =>
