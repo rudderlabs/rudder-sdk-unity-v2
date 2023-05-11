@@ -212,16 +212,13 @@ namespace RudderStack.Unity
                 { "id", SystemInfo.deviceUniqueIdentifier },
                 { "adTrackingEnabled", Config.GetAutoCollectAdvertId() },
             };
-            
-            if (Config.GetAutoCollectAdvertId())
-            {
-                if (!string.IsNullOrEmpty(_deviceToken)) 
-                    device["token"] = _deviceToken;
-                
-                if (!string.IsNullOrEmpty(_advertisingId)) 
-                    device["advertisingId"] = _advertisingId;
-            }
 
+            if (!string.IsNullOrEmpty(_deviceToken)) 
+                device["token"] = _deviceToken;
+                
+            if (!string.IsNullOrEmpty(_advertisingId)) 
+                device["advertisingId"] = _advertisingId;
+            
             options.Context["device"] = device;
             
             options.Context["screen"] = new Dict
