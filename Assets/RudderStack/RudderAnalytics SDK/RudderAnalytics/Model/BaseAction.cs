@@ -50,7 +50,10 @@ namespace RudderStack.Model
             else
                 this.Timestamp = originalTimestamp;
             this.Context = options.Context;
-            this.Integrations = options.Integrations;
+            if(options.Integrations.Count > 0)
+            {
+                this.Integrations = options.Integrations;
+            }
             this.AnonymousId = options.AnonymousId;
             this.UserId = UserId;
         }

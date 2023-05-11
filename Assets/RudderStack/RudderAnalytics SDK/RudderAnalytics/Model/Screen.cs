@@ -29,7 +29,10 @@ namespace RudderStack.Model
         {
             this.Name = name;
             this.Category = category;
-            this.Properties = properties ?? new Properties();
+            if (properties != null && properties.Count > 0)
+            {
+                this.Properties = properties;
+            }
         }
     }
 }
