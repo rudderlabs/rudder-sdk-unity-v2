@@ -170,10 +170,10 @@ namespace RudderStack.Unity
             Inner.Track(UserId, eventName, properties, options.Inner);
         }
 
-        public void Alias(string userId) =>
-            Alias(userId, new RSOptions());
+        public void Alias(string newId) =>
+            Alias(newId, new RSOptions());
 
-        public void Alias(string userId, RSOptions options)
+        public void Alias(string newId, RSOptions options)
         {
             if (string.IsNullOrEmpty(UserId))
             {
@@ -188,8 +188,8 @@ namespace RudderStack.Unity
 
             SetAdditionalValues(options);
             
-            Inner.Alias(UserId, userId, options.Inner);
-            UserId = userId;
+            Inner.Alias(UserId, newId, options.Inner);
+            UserId = newId;
         }
 
         public void Page(string name) =>
@@ -268,16 +268,13 @@ namespace RudderStack.Unity
                 { "id", SystemInfo.deviceUniqueIdentifier },
                 { "adTrackingEnabled", Config.GetAutoCollectAdvertId() },
             };
-            
-            if (Config.GetAutoCollectAdvertId())
-            {
-                if (!string.IsNullOrEmpty(_deviceToken)) 
-                    device["token"] = _deviceToken;
-                
-                if (!string.IsNullOrEmpty(_advertisingId)) 
-                    device["advertisingId"] = _advertisingId;
-            }
 
+            if (!string.IsNullOrEmpty(_deviceToken)) 
+                device["token"] = _deviceToken;
+                
+            if (!string.IsNullOrEmpty(_advertisingId)) 
+                device["advertisingId"] = _advertisingId;
+            
             options.Context["device"] = device;
             
             options.Context["screen"] = new Dict

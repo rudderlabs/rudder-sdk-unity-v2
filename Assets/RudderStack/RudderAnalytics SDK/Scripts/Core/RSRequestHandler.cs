@@ -107,8 +107,14 @@ namespace RudderStack.Unity
 
                 foreach (var action in batch.batch) 
                     action.SentAt = batch.SentAt;
+                
+                var settings = new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore,
+                };
 
-                var json = JsonConvert.SerializeObject(batch);
+                var json = JsonConvert.SerializeObject(batch, settings);
+                
 
                 // Basic Authentication
 #if NET35
