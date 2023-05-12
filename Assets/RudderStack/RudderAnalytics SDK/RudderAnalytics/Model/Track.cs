@@ -22,10 +22,7 @@ namespace RudderStack.Model
             : base("track", userId, options)
         {
             this.EventName = eventName;
-            if (properties!= null && properties.Count > 0)
-            {
-                this.Properties = properties;
-            }
+            this.Properties = properties ?? new Properties();
         }
 
         public Track() { }
