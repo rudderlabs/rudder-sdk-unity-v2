@@ -15,7 +15,7 @@ namespace RudderStack.Unity
     public class RSAnalytics
     {
         private static RSClient _client;
-        public static  string   VERSION => RudderAnalytics.VERSION;
+        public static  string   VERSION = "2.0.0";
 
         public static RSClient Client
         {

@@ -19,7 +19,10 @@ namespace RudderStack.Model
 
             : base("identify", userId, options)
         {
-            this.Traits = traits ?? new Traits();
+            if (traits!=null && traits.Count > 0)
+            {
+                this.Traits = traits;
+            }
         }
     }
 }
