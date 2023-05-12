@@ -180,7 +180,7 @@ namespace RudderStack.Unity
                 Logger.Error("The previous 'userId' is not valid.");
                 return;
             }
-            if (string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(newId))
             {
                 Logger.Error("Please supply a valid 'userId' to Alias.");
                 return;
