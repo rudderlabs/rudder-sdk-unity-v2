@@ -105,7 +105,11 @@ namespace RudderStack.Unity
                 // set the current request time
                 batch.SentAt = DateTime.UtcNow.ToString("o");
 
-                var jObject = JObject.FromObject(batch);
+                var settings = new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore,
+                };
+                var jObject = JObject.FromObject(batch, JsonSerializer.Create(settings));
                 
                 foreach (var item in jObject["batch"])
                 {
