@@ -1856,7 +1856,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1643288128809240020, guid: e6aaab33b9e1cb048b025890faf86a7f, type: 3}
       propertyPath: m_Enabled
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6229929660374489481, guid: e6aaab33b9e1cb048b025890faf86a7f, type: 3}
       propertyPath: m_SizeDelta.x
@@ -1873,6 +1873,10 @@ PrefabInstance:
     - target: {fileID: 6940871710492531969, guid: e6aaab33b9e1cb048b025890faf86a7f, type: 3}
       propertyPath: m_text
       value: "Tester\u200B"
+      objectReference: {fileID: 0}
+    - target: {fileID: 7943604286237282014, guid: e6aaab33b9e1cb048b025890faf86a7f, type: 3}
+      propertyPath: m_Text
+      value: https://lumighosttdzw.dataplane.rudderstack.com
       objectReference: {fileID: 0}
     - target: {fileID: 7943604286237282014, guid: e6aaab33b9e1cb048b025890faf86a7f, type: 3}
       propertyPath: m_Navigation.m_Mode
@@ -5158,7 +5162,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1643288128809240020, guid: e6aaab33b9e1cb048b025890faf86a7f, type: 3}
       propertyPath: m_Enabled
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1883097837315401762, guid: e6aaab33b9e1cb048b025890faf86a7f, type: 3}
       propertyPath: m_SizeDelta.x
@@ -5183,6 +5187,10 @@ PrefabInstance:
     - target: {fileID: 6940871710492531969, guid: e6aaab33b9e1cb048b025890faf86a7f, type: 3}
       propertyPath: m_text
       value: "Aliased Tester\u200B"
+      objectReference: {fileID: 0}
+    - target: {fileID: 7943604286237282014, guid: e6aaab33b9e1cb048b025890faf86a7f, type: 3}
+      propertyPath: m_Text
+      value: 2LBHH1KlfkC6MYGnKw2ag7agwqp
       objectReference: {fileID: 0}
     - target: {fileID: 7943604286237282014, guid: e6aaab33b9e1cb048b025890faf86a7f, type: 3}
       propertyPath: m_Navigation.m_Mode

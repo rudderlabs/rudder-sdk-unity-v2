@@ -29,6 +29,9 @@ namespace RudderStack.Model
 
         [JsonProperty(PropertyName = "userId")]
         public string UserId { get; private set; }
+        
+        [JsonProperty(PropertyName = "sentAt")]
+        public string SentAt { get; set; }
 
         [JsonIgnore]
         public int Size { get; set; }
@@ -39,16 +42,16 @@ namespace RudderStack.Model
         {
             options = options ?? new RudderOptions();
 
-            this.Type = type;
+            this.Type      = type;
             this.MessageId = Guid.NewGuid().ToString();
             if (options.Timestamp.HasValue)
                 this.Timestamp = options.Timestamp.Value.ToString("o");
             else
                 this.Timestamp = DateTime.UtcNow.ToString("o");
-            this.Context = options.Context;
+            this.Context      = options.Context;
             this.Integrations = options.Integrations;
-            this.AnonymousId = options.AnonymousId;
-            this.UserId = UserId;
+            this.AnonymousId  = options.AnonymousId;
+            this.UserId       = UserId;
         }
     }
 }

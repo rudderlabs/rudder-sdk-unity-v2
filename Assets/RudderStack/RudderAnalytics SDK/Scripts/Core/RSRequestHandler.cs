@@ -105,16 +105,10 @@ namespace RudderStack.Unity
                 // set the current request time
                 batch.SentAt = DateTime.UtcNow.ToString("o");
 
-                var jObject = JObject.FromObject(batch);
-                
-                foreach (var item in jObject["batch"])
-                {
-                    item["sentAt"] = batch.SentAt;
-                    if (string.IsNullOrEmpty(item["userId"]?.Value<string>())) 
-                        item["userId"].Parent.Remove();
-                }
+                foreach (var action in batch.batch) 
+                    action.SentAt = batch.SentAt;
 
-                var json = jObject.ToString();
+                var json = JsonConvert.SerializeObject(batch);
 
                 // Basic Authentication
 #if NET35

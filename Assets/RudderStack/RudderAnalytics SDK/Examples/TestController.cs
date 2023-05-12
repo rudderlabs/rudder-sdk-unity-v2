@@ -28,6 +28,8 @@ namespace Examples.RudderStack.Unity
         [SerializeField] private InputField propertyType;
         [SerializeField] private InputField propertyValue;
 
+        private int id = 0;
+
         private void Update()
         {
             if (userDisplay)
@@ -58,7 +60,7 @@ namespace Examples.RudderStack.Unity
         public void Track() =>
             RSAnalytics.Client.Track(
                 eventName.text,
-                new Dictionary<string, object> { { propertyType.text, propertyValue.text }, } );
+                new Dictionary<string, object> { { propertyType.text, propertyValue.text }, {"Id", ++id}} );
 
         public void Page() =>
             RSAnalytics.Client.Page(
