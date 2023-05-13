@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NodaTime;
@@ -106,10 +105,12 @@ namespace RudderStack.Unity
 
         public void Identify(string userId, IDictionary<string, object> traits, RSOptions options)
         {
+            if (string.IsNullOrEmpty(userId) && string.IsNullOrEmpty(AnonymousId))
+            {
+                Logger.Error("Please supply a valid userId to Identify.");
+                return;
+            }
 
-            if (string.IsNullOrEmpty(userId) && (options is null || string.IsNullOrEmpty(options.AnonymousId)))
-                throw new InvalidOperationException("Please supply a valid userId to Identify.");
-            
             UserId     = userId;
             UserTraits = traits;
             
@@ -129,6 +130,16 @@ namespace RudderStack.Unity
 
         public void Group(string groupId, IDictionary<string, object> traits, RSOptions options)
         {
+            if (string.IsNullOrEmpty(groupId))
+            {
+                Logger.Error("Please supply a valid groupId to call #Group.");
+                return;
+            }
+            if (string.IsNullOrEmpty(UserId) && string.IsNullOrEmpty(AnonymousId))
+            {
+                Logger.Error("Please supply a valid userId or anonymousId to call #Group.");
+                return;
+            }
             SetAdditionalValues(options);
             Inner.Group(UserId, groupId, traits, options.Inner);
         }
@@ -144,6 +155,17 @@ namespace RudderStack.Unity
 
         public void Track(string eventName, IDictionary<string, object> properties, RSOptions options)
         {
+            if (string.IsNullOrEmpty(eventName))
+            {
+                Logger.Error("Please supply a valid event to call #Track.");
+                return;
+            }
+            if (string.IsNullOrEmpty(UserId) && string.IsNullOrEmpty(AnonymousId))
+            {
+                Logger.Error("Please supply a valid userId or anonymousId to call #Track.");
+                return;
+            }
+
             SetAdditionalValues(options);
             Inner.Track(UserId, eventName, properties, options.Inner);
         }
@@ -153,7 +175,19 @@ namespace RudderStack.Unity
 
         public void Alias(string newId, RSOptions options)
         {
+            if (string.IsNullOrEmpty(UserId))
+            {
+                Logger.Error("The previous 'userId' is not valid.");
+                return;
+            }
+            if (string.IsNullOrEmpty(newId))
+            {
+                Logger.Error("Please supply a valid 'userId' to Alias.");
+                return;
+            }
+
             SetAdditionalValues(options);
+            
             Inner.Alias(UserId, newId, options.Inner);
             UserId = newId;
         }
@@ -175,6 +209,17 @@ namespace RudderStack.Unity
 
         public void Page(string name, string category, IDictionary<string, object> properties, RSOptions options)
         {
+            if (string.IsNullOrEmpty(name))
+            {
+                Logger.Error("Please supply a valid name to call #Page.");
+                return;
+            }
+            if (string.IsNullOrEmpty(UserId) && string.IsNullOrEmpty(AnonymousId))
+            {
+                Logger.Error("Please supply a valid userId or anonymousId to call #Page.");
+                return;
+            }
+
             SetAdditionalValues(options);
             Inner.Page(UserId, name, category, properties, options.Inner);
         }
@@ -196,6 +241,17 @@ namespace RudderStack.Unity
 
         public void Screen(string name, string category, IDictionary<string, object> properties, RSOptions options)
         {
+            if (string.IsNullOrEmpty(name))
+            {
+                Logger.Error("Please supply a valid name to call #Screen.");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(UserId) && string.IsNullOrEmpty(AnonymousId))
+            {
+                Logger.Error("Please supply a valid userId or anonymousId to call #Page.");
+                return;
+            }
             SetAdditionalValues(options);
             Inner.Screen(UserId, name, category, properties, options.Inner);
         }
@@ -227,6 +283,14 @@ namespace RudderStack.Unity
                 { "width", UnityEngine.Screen.width },
                 { "height", UnityEngine.Screen.height },
             };
+            
+            options.Context["app"] = new Dict
+            {
+                { "name", Application.productName },
+                //{ "build", UnityEngine.Screen.width },
+                //{ "namespace", UnityEngine.Screen.height },
+                { "version", Application.version },
+            };
                 
             options.Context["os"] = new Dict
             {
@@ -239,19 +303,8 @@ namespace RudderStack.Unity
                 { "version", RSAnalytics.VERSION },
             };
 
-             var tz = DateTimeZoneProviders.Tzdb.GetSystemDefault();
-             options.Context["timezone"] = tz.Id;
+            options.Context["timezone"] = DateTimeZoneProviders.Tzdb.GetSystemDefault().Id;
 
-            /*
-            if (TZConvert.TryWindowsToIana(TimeZoneInfo.Local.Id, out var iana))
-                options.Context["timezone"] = iana;
-            else if (TZConvert.TryWindowsToIana(TimeZoneInfo.Local.StandardName, out iana))
-                options.Context["timezone"] = iana;
-            else if (TZConvert.TryWindowsToIana(TimeZoneInfo.Local.StandardName + " Standard Time", out iana))
-                options.Context["timezone"] = iana;
-            else
-                options.Context["timezone"] = TimeZoneInfo.Local.StandardName;
-            */
             if (UserTraits != null)
             {
                 options.Context.Add("traits", UserTraits);
