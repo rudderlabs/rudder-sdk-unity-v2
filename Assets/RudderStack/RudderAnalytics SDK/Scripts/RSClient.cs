@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NodaTime;
 using RudderStack.Model;
 using RudderStack.Stats;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace RudderStack.Unity
 {
@@ -14,13 +16,13 @@ namespace RudderStack.Unity
         private const string AnonIdKey = "rudderstack-anon-id";
         private const string UserIdKey = "rudderstack-user-id";
         private const string TraitsKey = "rudderstack-user-traits";
-        
+
         private static string _advertisingId;
         private static string _deviceToken;
-        
+
         private        string _userId;
         private static string _anonymousId;
-        
+
         private IDictionary<string, object> _userTraits;
 
         public string UserId
@@ -42,7 +44,7 @@ namespace RudderStack.Unity
                 PlayerPrefs.SetString(TraitsKey, JsonConvert.SerializeObject(value));
             }
         }
-        
+
         public static string AnonymousId
         {
             get => _anonymousId;
@@ -85,21 +87,17 @@ namespace RudderStack.Unity
             else
                 AnonymousId = Guid.NewGuid().ToString();
         }
-        
+
         public string WriteKey
         {
             get => Inner.WriteKey;
         }
 
-        public RSConfig Config
-        {
-            get;
-            private set;
-        }
+        public RSConfig Config { get; private set; }
 
         public void Identify(string userId) =>
             Identify(userId, null, new RSOptions());
-        
+
         public void Identify(string userId, IDictionary<string, object> traits) =>
             Identify(userId, traits, new RSOptions());
 
@@ -113,7 +111,7 @@ namespace RudderStack.Unity
 
             UserId     = userId;
             UserTraits = traits;
-            
+
             SetAdditionalValues(options);
             Inner.Identify(userId, traits, options.Inner);
         }
@@ -121,7 +119,7 @@ namespace RudderStack.Unity
 
         public void Group(string groupId) =>
             Group(groupId, null, new RSOptions());
-        
+
         public void Group(string groupId, RSOptions options) =>
             Group(groupId, null, options);
 
@@ -135,11 +133,13 @@ namespace RudderStack.Unity
                 Logger.Error("Please supply a valid groupId to call #Group.");
                 return;
             }
+
             if (string.IsNullOrEmpty(UserId) && string.IsNullOrEmpty(AnonymousId))
             {
                 Logger.Error("Please supply a valid userId or anonymousId to call #Group.");
                 return;
             }
+
             SetAdditionalValues(options);
             Inner.Group(UserId, groupId, traits, options.Inner);
         }
@@ -160,6 +160,7 @@ namespace RudderStack.Unity
                 Logger.Error("Please supply a valid event to call #Track.");
                 return;
             }
+
             if (string.IsNullOrEmpty(UserId) && string.IsNullOrEmpty(AnonymousId))
             {
                 Logger.Error("Please supply a valid userId or anonymousId to call #Track.");
@@ -180,6 +181,7 @@ namespace RudderStack.Unity
                 Logger.Error("The previous 'userId' is not valid.");
                 return;
             }
+
             if (string.IsNullOrEmpty(newId))
             {
                 Logger.Error("Please supply a valid 'userId' to Alias.");
@@ -187,7 +189,7 @@ namespace RudderStack.Unity
             }
 
             SetAdditionalValues(options);
-            
+
             Inner.Alias(UserId, newId, options.Inner);
             UserId = newId;
         }
@@ -214,6 +216,7 @@ namespace RudderStack.Unity
                 Logger.Error("Please supply a valid name to call #Page.");
                 return;
             }
+
             if (string.IsNullOrEmpty(UserId) && string.IsNullOrEmpty(AnonymousId))
             {
                 Logger.Error("Please supply a valid userId or anonymousId to call #Page.");
@@ -252,51 +255,76 @@ namespace RudderStack.Unity
                 Logger.Error("Please supply a valid userId or anonymousId to call #Page.");
                 return;
             }
+
             SetAdditionalValues(options);
             Inner.Screen(UserId, name, category, properties, options.Inner);
         }
 
         private void SetAdditionalValues(RSOptions options)
         {
-            var osName = SystemInfo.operatingSystem;
-            
+            var osName   = SystemInfo.operatingSystem;
+            var devModel = SystemInfo.deviceModel;
+
             var device = new Dict()
             {
                 { "name", SystemInfo.deviceName },
-                { "model", SystemInfo.deviceModel },
+                { "model", devModel },
                 { "type", osName.Substring(0, osName.IndexOf(' ')) },
                 { "id", SystemInfo.deviceUniqueIdentifier },
                 { "adTrackingEnabled", Config.GetAutoCollectAdvertId() },
             };
 
-            if (!string.IsNullOrEmpty(_deviceToken)) 
+#if UNITY_ANDROID
+            device["manufacturer"] = devModel.Substring(0, devModel.IndexOf(' '));
+#elif UNITY_IOS
+            device["manufacturer"] = "Apple";
+#endif
+
+            if (!string.IsNullOrEmpty(_deviceToken))
                 device["token"] = _deviceToken;
-                
-            if (!string.IsNullOrEmpty(_advertisingId)) 
+
+            if (!string.IsNullOrEmpty(_advertisingId))
                 device["advertisingId"] = _advertisingId;
-            
+
             options.Context["device"] = device;
-            
+
             options.Context["screen"] = new Dict
             {
                 { "density", UnityEngine.Screen.dpi },
                 { "width", UnityEngine.Screen.width },
                 { "height", UnityEngine.Screen.height },
             };
-            
-            options.Context["app"] = new Dict
+
+            var app = new Dict
             {
                 { "name", Application.productName },
-                //{ "build", UnityEngine.Screen.width },
-                //{ "namespace", UnityEngine.Screen.height },
+                { "build", UnityEngine.Screen.width },
+                { "namespace", RSMaster.Instance.settings.packageName },
                 { "version", Application.version },
             };
-                
-            options.Context["os"] = new Dict
+
+#if UNITY_ANDROID
+            app["build"] = RSMaster.Instance.settings.androidCode;
+#elif UNITY_IOS
+            app["build"] = RSPlayerSettings.Instance.iosCode;
+#endif
+            options.Context["app"] = app;
+
+#if UNITY_ANDROID
+            if (!Application.isEditor)
             {
-                { "name", osName },
-            };
-                
+                using var unityPlayerClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+                using var context = unityPlayerClass.GetStatic<AndroidJavaObject>("currentActivity");
+                using var telephony = context.Call<AndroidJavaObject>("getSystemService", context.GetStatic<string>("TELEPHONY_SERVICE"));
+                var networkName = telephony.Call<string>("getNetworkOperatorName");
+                options.Context["network"] = new Dict { { "carrier", networkName }, };
+            }
+#endif
+            
+            options.Context["userAgent"] = Config.GetUserAgent();
+
+            options.Context["os"] = new Dict { { "name", osName }, };
+
             options.Context["library"] = new Dict
             {
                 { "name", "rudder-unity-library" },
@@ -309,6 +337,7 @@ namespace RudderStack.Unity
             {
                 options.Context.Add("traits", UserTraits);
             }
+
             options.SetAnonymousId(AnonymousId);
         }
 
@@ -327,7 +356,7 @@ namespace RudderStack.Unity
         {
             _advertisingId = advertisingId;
         }
-        
+
         /// <summary>
         /// Set the push token for the device to be passed to the downstream destinations
         /// </summary>
@@ -348,7 +377,7 @@ namespace RudderStack.Unity
             FlushAsync().GetAwaiter().OnCompleted(() =>
             {
                 //AnonymousId = Guid.NewGuid().ToString();
-            
+
                 PlayerPrefs.DeleteKey(UserIdKey);
                 PlayerPrefs.DeleteKey(TraitsKey);
                 _userTraits = null;
