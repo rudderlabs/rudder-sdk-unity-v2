@@ -139,6 +139,7 @@ namespace RudderStack.Unity
 
                 // we have a batch that we're trying to send
                 var batch = _batchFactory.Create(batchActions);
+
                 Logger.Debug("Created flush batch.", new Dict { { "batch size", batchActions.Count } });
 
                 // make the request here
