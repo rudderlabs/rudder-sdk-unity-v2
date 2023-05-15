@@ -64,10 +64,14 @@ namespace Examples.RudderStack.Unity
             count++;
             RSOptions rudderOptions = new RSOptions();
             rudderOptions.SetIntegration("Firebase", true);
+            for (int i = 0; i < 60; i++)
+            {
+                RSAnalytics.Client.Track($"Track {i}");
+            }
 
-            //RSAnalytics.Client.Track($"Track {count}");
-            //RSAnalytics.Client.Track($"Track {count}", new Dictionary<string, object> { { "key_1", "value_1" }, });
-            RSAnalytics.Client.Track($"Track {count}", new Dictionary<string, object> { { "key_1", "value_1" }, }, rudderOptions);
+                //RSAnalytics.Client.Track($"Track {count}");
+                //RSAnalytics.Client.Track($"Track {count}", new Dictionary<string, object> { { "key_1", "value_1" }, });
+                //RSAnalytics.Client.Track($"Track {count}", new Dictionary<string, object> { { "key_1", "value_1" }, }, rudderOptions);
         }
 
         public void Page()

@@ -28,29 +28,30 @@ namespace RudderStack.Unity
         private readonly int                     _maxBatchSize;
         private readonly IBatchFactory           _batchFactory;
         private readonly IRSRequestHandler       _requestHandler;
-        private readonly int                     _maxQueueSize;
         private readonly CancellationTokenSource _continue;
         private readonly int                     _flushIntervalInMillis;
-        private readonly int                     _threads;
-        private readonly Semaphore               _semaphore;
         private          Timer                   _timer;
         private readonly RSStorageManager        _storageManager;
         private readonly int                     _dbThresholdCount;
+
+        private readonly Semaphore _timerSemaphore;
         
-        private bool requestFailed;
+        private          bool   requestFailed;
+        private readonly object _queueLock;
 
         internal RSFlushHandler(IBatchFactory batchFactory, IRequestHandler requestHandler, RSConfig config)
         {
             _queue                 = new List<BaseAction>();
             _batchFactory          = batchFactory;
             _requestHandler        = requestHandler as IRSRequestHandler;
-            _maxQueueSize          = config.GetFlushQueueSize();
             _maxBatchSize          = config.Inner.FlushAt;
             _dbThresholdCount      = config.GetDbThresholdCount();
             _continue              = new CancellationTokenSource();
             _flushIntervalInMillis = config.Inner.FlushIntervalInMillis;
-            _threads               = 1;
-            _semaphore             = new Semaphore(_threads, _threads);
+
+            _timerSemaphore = new Semaphore(1, 1);
+
+            _queueLock = new object();
 
             const string keyLocation = "04j4bf5dkd8";
             string       storageKey;
@@ -68,36 +69,35 @@ namespace RudderStack.Unity
             _storageManager = new RSStorageManager(storageKey);
 
             _queue.AddRange(_storageManager.LoadFromFile());
-            RunInterval();
+
+            new Thread(BlockSemaphore).Start();
+            new Thread(FlushCycle).Start();
+        }
+
+        private void BlockSemaphore()
+        {
+            while (!_continue.Token.IsCancellationRequested)
+            {
+                _timerSemaphore.WaitOne();
+            }
         }
 
 
-        private void RunInterval()
+        private void FlushCycle()
         {
-            var initialDelay = _queue.Count == 0 ? _flushIntervalInMillis : 0;
-            _timer = new Timer(async b => await PerformFlush(), new { }, initialDelay, _flushIntervalInMillis);
-        }
+            while (!_continue.Token.IsCancellationRequested)
+            {
+                _timerSemaphore.WaitOne(_flushIntervalInMillis);
 
-
-        private async Task PerformFlush()
-        {
-            if (!_semaphore.WaitOne(1))
-            {
-                Logger.Debug("Skipping flush. Workload limit has been reached");
-                return;
-            }
-
-            try
-            {
-                await FlushImpl();
-            }
-            catch
-            {
-                Logger.Error("Flush couldn't be completed");
-            }
-            finally
-            {
-                _semaphore.Release();
+                try
+                {
+                    FlushImpl().GetAwaiter().GetResult();
+                }
+                catch (System.Exception e)
+                {
+                    
+                    Logger.Error("Flush couldn't be completed\n" + e.Message);
+                }
             }
         }
 
@@ -106,47 +106,40 @@ namespace RudderStack.Unity
         /// </summary>
         public void Flush()
         {
-            FlushAsync().GetAwaiter().GetResult();
+            _timerSemaphore.Release();
         }
 
         public async Task FlushAsync()
         {
-            await PerformFlush().ConfigureAwait(false);
-            WaitWorkersToBeReleased();
-        }
-
-        private void WaitWorkersToBeReleased()
-        {
-            for (var i = 0; i < _threads; i++) _semaphore.WaitOne();
-            _semaphore.Release(_threads);
+            _timerSemaphore.Release();
         }
 
         private async Task FlushImpl()
         {
-            if (_queue.Count == 0) return;
-            
+            lock (_queueLock) if (_queue.Count == 0) return;
+
             while (_queue.Count > 0 && !_continue.Token.IsCancellationRequested)
             {
-                var current = new List<BaseAction>();
+                var batchActions = new List<BaseAction>();
 
-                for (int i = 0, currentSize = 0;
-                     i < _queue.Count &&
-                     i < _maxBatchSize &&
-                     !_continue.Token.IsCancellationRequested &&
-                     currentSize < BatchMaxSize - ActionMaxSize;
-                     i++)
-                {
-                    current.Add(_queue[i]);
-                    currentSize += _queue[i].Size;
-                }
+                int batchLength;
+                
+                lock (_queueLock) batchLength = Math.Min(_queue.Count, _maxBatchSize);
 
-                if (current.Count == 0)
+                for (int i = 0, currentSize = 0; i < batchLength && BatchMaxSize > currentSize + ActionMaxSize && !_continue.Token.IsCancellationRequested; i++)
+                    lock (_queueLock)
+                    {
+                        batchActions.Add(_queue[i]);
+                        currentSize += _queue[i].Size;
+                    }
+
+                if (batchActions.Count == 0)
                     break;
 
                 // we have a batch that we're trying to send
-                var batch = _batchFactory.Create(current);
+                var batch = _batchFactory.Create(batchActions);
 
-                Logger.Debug("Created flush batch.", new Dict { { "batch size", current.Count } });
+                Logger.Debug("Created flush batch.", new Dict { { "batch size", batchActions.Count } });
 
                 // make the request here
                 _requestHandler.BatchCompleted += OnRequestCompleted;
@@ -160,17 +153,21 @@ namespace RudderStack.Unity
             requestFailed = false;
 
             // save to file
-            _storageManager.SaveToFile(_queue, _dbThresholdCount);
+            lock (_queueLock) _storageManager.SaveToFile(_queue);
         }
-
 
         private void OnRequestCompleted(Batch batch, bool succeeded)
         {
             Logger.Debug($"Request completed! Success: {succeeded}");
             if (succeeded)
             {
-                foreach (var action in batch.batch) 
-                    _queue.Remove(action);
+                lock (_queueLock)
+                {
+                    foreach (var action in batch.batch)
+                        _queue.Remove(action);
+                    
+                    _storageManager.SaveToFile(_queue);
+                }
             }
             else
             {
@@ -188,28 +185,28 @@ namespace RudderStack.Unity
                 return;
             }
 
-            _semaphore.WaitOne();
-
-            if (_queue.Count < _dbThresholdCount)
+            bool flushRequired;
+            lock (_queueLock)
             {
-                _queue.Add(action);
-                _storageManager.SaveToFile(_queue, _dbThresholdCount);
+                if (_queue.Count < _dbThresholdCount)
+                {
+                    _queue.Add(action);
+                    _storageManager.SaveToFile(_queue);
+                }
+
+                Logger.Debug("Enqueued action in async loop.", new Dict
+                {
+                    { "message id", action.MessageId },
+                    { "queue size", _queue.Count }
+                });
+
+                flushRequired = _queue.Count >= _maxBatchSize;
             }
-
-            Logger.Debug("Enqueued action in async loop.", new Dict
-            {
-                { "message id", action.MessageId },
-                { "queue size", _queue.Count }
-            });
-
-            var flushRequired = _queue.Count >= _maxQueueSize;
-
-            _semaphore.Release();
 
             if (flushRequired)
             {
                 Logger.Debug("Queue is full. Performing a flush");
-                await PerformFlush();
+                await FlushAsync();
             }
 
         }
@@ -219,7 +216,7 @@ namespace RudderStack.Unity
             Logger.Debug("Disposing AsyncIntervalFlushHandler");
             _timer?.Dispose();
 #if !NET35
-            _semaphore?.Dispose();
+            _timerSemaphore?.Dispose();
 #endif
             _continue?.Cancel();
         }
