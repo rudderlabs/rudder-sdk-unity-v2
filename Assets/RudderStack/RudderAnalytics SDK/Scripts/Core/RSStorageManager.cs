@@ -31,6 +31,11 @@ namespace RudderStack.Unity.Utility
             _filePath      = _directoryPath + "rs_persistence";
         }
 
+        public void ClearFile()
+        {
+            File.Delete(_filePath);
+        }
+
         public List<BaseAction> LoadFromFile()
         {
             var res = new List<BaseAction>();

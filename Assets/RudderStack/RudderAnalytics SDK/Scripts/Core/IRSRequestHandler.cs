@@ -9,9 +9,16 @@ using RudderStack.Request;
 
 namespace RudderStack.Unity
 {
+    public enum BatchResult
+    {
+        Success,
+        Fail,
+        WrongKey,
+    }
+    
     public interface IRSRequestHandler : IRequestHandler
     {
-        event Action<Batch, bool> BatchCompleted;
+        event Action<Batch, BatchResult> BatchCompleted;
         
 #if NET35
         public void Init(RudderClient client, IHttpClient httpClient);

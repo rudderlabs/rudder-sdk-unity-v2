@@ -23,7 +23,7 @@ namespace RudderStack.Unity
 {
     public class RSRequestHandler : IRSRequestHandler
     {
-        public event Action<Batch, bool> BatchCompleted;
+        public event Action<Batch, BatchResult> BatchCompleted;
 
         /// <summary>
         /// RudderStack client to mark statistics
@@ -161,7 +161,6 @@ namespace RudderStack.Unity
 
                 while (!_backo.HasReachedMax)
                 {
-                    Debug.Log("War");
 #if NET35
                     watch.Start();
     
@@ -293,48 +292,50 @@ namespace RudderStack.Unity
                     watch.Stop();
                     statusCode = response != null ? (int)response.StatusCode : 0;
 
+                    if (System.Text.RegularExpressions.Regex.IsMatch(responseStr, ".*Invalid writeKey.*"))
+                    {
+                        BatchCompleted?.Invoke(batch, BatchResult.WrongKey);
+                        break;
+                    }
                     if (response != null && response.StatusCode == HttpStatusCode.OK)
                     {
                         Succeed(batch, watch.ElapsedMilliseconds);
                         break;
                     }
-                    else
+                    if ((statusCode >= 400 && statusCode <= 600) || retry)
                     {
-                        if ((statusCode >= 500 && statusCode <= 600) || statusCode == 429 || retry)
+                        // If status code is greater than 500 and less than 600, it indicates server error
+                        // Error code 429 indicates rate limited.
+                        // Retry uploading in these cases.
+                        await _backo.AttemptAsync();
+                        if (statusCode == 429)
                         {
-                            // If status code is greater than 500 and less than 600, it indicates server error
-                            // Error code 429 indicates rate limited.
-                            // Retry uploading in these cases.
-                            await _backo.AttemptAsync();
-                            if (statusCode == 429)
-                            {
-                                Logger.Info(
-                                    $"Too many request at the moment CurrentAttempt:{_backo.CurrentAttempt} Retrying to send request",
-                                    new Dict
-                                    {
-                                        { "batch id", batch.MessageId },
-                                        { "statusCode", statusCode },
-                                        { "duration (ms)", watch.ElapsedMilliseconds }
-                                    });
-                            }
-                            else
-                            {
-                                Logger.Info(
-                                    $"Internal RudderStack Server error CurrentAttempt:{_backo.CurrentAttempt} Retrying to send request",
-                                    new Dict
-                                    {
-                                        { "batch id", batch.MessageId },
-                                        { "statusCode", statusCode },
-                                        { "duration (ms)", watch.ElapsedMilliseconds }
-                                    });
-                            }
+                            Logger.Info(
+                                $"Too many request at the moment CurrentAttempt:{_backo.CurrentAttempt} Retrying to send request",
+                                new Dict
+                                {
+                                    { "batch id", batch.MessageId },
+                                    { "statusCode", statusCode },
+                                    { "duration (ms)", watch.ElapsedMilliseconds }
+                                });
                         }
                         else
                         {
-                            //HTTP status codes smaller than 500 or greater than 600 except for 429 are either Client errors or a correct status
-                            //This means it should not retry 
-                            break;
+                            Logger.Info(
+                                $"Internal RudderStack Server error CurrentAttempt:{_backo.CurrentAttempt} Retrying to send request",
+                                new Dict
+                                {
+                                    { "batch id", batch.MessageId },
+                                    { "statusCode", statusCode },
+                                    { "duration (ms)", watch.ElapsedMilliseconds }
+                                });
                         }
+                    }
+                    else
+                    {
+                        //HTTP status codes smaller than 500 or greater than 600 except for 429 are either Client errors or a correct status
+                        //This means it should not retry 
+                        break;
                     }
 #endif
                 }
@@ -362,7 +363,7 @@ namespace RudderStack.Unity
 
         private void Fail(Batch batch, System.Exception e, long duration)
         {
-            BatchCompleted?.Invoke(batch, false);
+            BatchCompleted?.Invoke(batch, BatchResult.Fail);
             foreach (BaseAction action in batch.batch)
             {
                 _client.Statistics.IncrementFailed();
@@ -379,7 +380,7 @@ namespace RudderStack.Unity
 
         private void Succeed(Batch batch, long duration)
         {
-            BatchCompleted?.Invoke(batch, true);
+            BatchCompleted?.Invoke(batch, BatchResult.Success);
             foreach (BaseAction action in batch.batch)
             {
                 _client.Statistics.IncrementSucceeded();

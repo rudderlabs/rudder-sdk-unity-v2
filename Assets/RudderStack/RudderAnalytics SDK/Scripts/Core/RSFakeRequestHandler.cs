@@ -12,7 +12,7 @@ namespace RudderStack.Unity
 
     public class RSFakeRequestHandler : IRSRequestHandler
     {
-        public event Action<Batch, bool> BatchCompleted;
+        public event Action<Batch, BatchResult> BatchCompleted;
 
         private RudderClient _client;
 
@@ -24,7 +24,7 @@ namespace RudderStack.Unity
                 _client.RaiseSuccess(action);
             }
 
-            BatchCompleted?.Invoke(batch, true);
+            BatchCompleted?.Invoke(batch, BatchResult.Success);
         }
         
 #if NET35
