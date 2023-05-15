@@ -306,7 +306,7 @@ namespace RudderStack.Unity
 #if UNITY_ANDROID
             app["build"] = RSMaster.Instance.settings.androidCode;
 #elif UNITY_IOS
-            app["build"] = RSPlayerSettings.Instance.iosCode;
+            app["build"] = RSMaster.Instance.settings.iosCode;
 #endif
             options.Context["app"] = app;
 

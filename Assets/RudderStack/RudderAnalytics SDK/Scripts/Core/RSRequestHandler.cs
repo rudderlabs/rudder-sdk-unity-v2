@@ -192,7 +192,13 @@ namespace RudderStack.Unity
                             }
                         }
                         statusCode = (response != null) ? (int)response.StatusCode : 0;
-                        if ((statusCode >= 500 && statusCode <= 600) || statusCode == 429 || statusCode == 0)
+
+                        if (System.Text.RegularExpressions.Regex.IsMatch(responseStr, ".*Invalid writeKey.*"))
+                        {
+                            BatchCompleted?.Invoke(batch, BatchResult.WrongKey);
+                            break;
+                        }
+                        if ((statusCode >= 400 && statusCode <= 600) || statusCode == 429 || statusCode == 0)
                         {
                             // If status code is greater than 500 and less than 600, it indicates server error
                             // Error code 429 indicates rate limited.
@@ -239,6 +245,8 @@ namespace RudderStack.Unity
 
                     HttpResponseMessage response = null;
                     var                 retry    = false;
+                    
+                    Debug.Log("Batch Sent:\n" + json);
                     try
                     {
                         response = await _httpClient.PostAsync(uri, content).ConfigureAwait(false);
@@ -333,7 +341,7 @@ namespace RudderStack.Unity
                     }
                     else
                     {
-                        //HTTP status codes smaller than 500 or greater than 600 except for 429 are either Client errors or a correct status
+                        //HTTP status codes smaller than 400 or greater than 600 are either Client errors or a correct status
                         //This means it should not retry 
                         break;
                     }

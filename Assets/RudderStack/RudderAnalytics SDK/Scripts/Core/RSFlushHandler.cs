@@ -118,24 +118,28 @@ namespace RudderStack.Unity
         {
             lock (_queueLock) if (_queue.Count == 0) return;
 
-            while (_queue.Count > 0 && !_continue.Token.IsCancellationRequested)
+            while (!_continue.Token.IsCancellationRequested)
             {
-                var batchActions = new List<BaseAction>();
-
-                int batchLength;
+                List<BaseAction> batchActions;
                 
-                lock (_queueLock) batchLength = Math.Min(_queue.Count, _maxBatchSize);
+                lock (_queueLock)
+                {
+                    if (_queue.Count <= 0) break;
 
-                for (int i = 0, currentSize = 0; i < batchLength && BatchMaxSize > currentSize + ActionMaxSize && !_continue.Token.IsCancellationRequested; i++)
-                    lock (_queueLock)
+                    batchActions = new List<BaseAction>();
+                    var batchLength = Math.Min(_queue.Count, _maxBatchSize);
+
+                    for (int i = 0, currentSize = 0;
+                         i < batchLength && BatchMaxSize > currentSize + ActionMaxSize &&
+                         !_continue.Token.IsCancellationRequested;
+                         i++)
                     {
                         batchActions.Add(_queue[i]);
                         currentSize += _queue[i].Size;
                     }
 
-                if (batchActions.Count == 0)
-                    break;
-
+                    if (batchActions.Count == 0) break;
+                }
 
                 // we have a batch that we're trying to send
                 var batch = _batchFactory.Create(batchActions);
@@ -149,6 +153,7 @@ namespace RudderStack.Unity
 
                 if (requestFailed) // request failed! stop flashing and wait for the better occasion
                     break;
+
             }
 
             requestFailed = false;
@@ -187,7 +192,7 @@ namespace RudderStack.Unity
             }
         }
 
-        public async Task Process(BaseAction action)
+        public void Process(BaseAction action)
         {
             action.Size = ActionSizeCalculator.Calculate(action);
 
@@ -218,7 +223,7 @@ namespace RudderStack.Unity
             if (flushRequired)
             {
                 Logger.Debug("Queue is full. Performing a flush");
-                await FlushAsync();
+                Flush();
             }
 
         }
