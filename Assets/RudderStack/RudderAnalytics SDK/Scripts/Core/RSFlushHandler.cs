@@ -136,6 +136,7 @@ namespace RudderStack.Unity
                 if (batchActions.Count == 0)
                     break;
 
+
                 // we have a batch that we're trying to send
                 var batch = _batchFactory.Create(batchActions);
 
@@ -156,22 +157,33 @@ namespace RudderStack.Unity
             lock (_queueLock) _storageManager.SaveToFile(_queue);
         }
 
-        private void OnRequestCompleted(Batch batch, bool succeeded)
+        private void OnRequestCompleted(Batch batch, BatchResult result)
         {
-            Logger.Debug($"Request completed! Success: {succeeded}");
-            if (succeeded)
+            Logger.Debug($"Request completed! Result: {result}");
+            switch (result)
             {
-                lock (_queueLock)
+                case BatchResult.WrongKey:
                 {
-                    foreach (var action in batch.batch)
-                        _queue.Remove(action);
-                    
-                    _storageManager.SaveToFile(_queue);
+                    requestFailed = true;
+                    _storageManager.ClearFile();
+                    lock (_queueLock) _queue.Clear();
+                    break;
                 }
-            }
-            else
-            {
-                requestFailed = true;
+                case BatchResult.Success:
+                {
+                    lock (_queueLock)
+                    {
+                        foreach (var action in batch.batch)
+                            _queue.Remove(action);
+                    
+                        _storageManager.SaveToFile(_queue);
+                    }
+
+                    break;
+                }
+                default:
+                    requestFailed = true;
+                    break;
             }
         }
 
