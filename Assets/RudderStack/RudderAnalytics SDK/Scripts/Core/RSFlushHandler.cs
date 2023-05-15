@@ -141,6 +141,7 @@ namespace RudderStack.Unity
                     if (batchActions.Count == 0) break;
                 }
 
+
                 // we have a batch that we're trying to send
                 var batch = _batchFactory.Create(batchActions);
 
