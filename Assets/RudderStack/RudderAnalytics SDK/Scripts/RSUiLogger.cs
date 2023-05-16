@@ -39,8 +39,20 @@ namespace RudderStack.Unity
 
             Jobs.Enqueue(() =>
             {
-                if (uiLogger) uiLogger.text                   += logText;
-                if (textMeshProLogger) textMeshProLogger.text += logText;
+                if (uiLogger)
+                {
+                    var text = (uiLogger.text + logText);
+                    if (text.Length > 1000)
+                        text = text.Substring(text.Length - 1000, 1000);
+                    uiLogger.text = text;
+                }
+                if (textMeshProLogger)
+                {
+                    var text = (textMeshProLogger.text + logText);
+                    if (text.Length > 1000)
+                        text = text.Substring(text.Length - 1000, 1000);
+                    textMeshProLogger.text = text;
+                }
             });
         }
     }

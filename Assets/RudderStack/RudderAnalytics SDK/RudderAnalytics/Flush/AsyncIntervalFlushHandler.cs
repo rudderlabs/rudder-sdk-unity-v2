@@ -138,7 +138,7 @@ namespace RudderStack.Flush
             }
         }
 
-        public async Task Process(BaseAction action)
+        public void Process(BaseAction action)
         {
             action.Size = ActionSizeCalculator.Calculate(action);
 
