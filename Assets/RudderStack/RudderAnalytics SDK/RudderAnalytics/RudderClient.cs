@@ -345,7 +345,7 @@ namespace RudderStack
 
         private void Enqueue(BaseAction action)
         {
-            Task.Run(() => _flushHandler.Process(action));
+            _flushHandler.Process(action);
             this.Statistics.IncrementSubmitted();
         }
 
