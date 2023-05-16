@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.44657826, g: 0.49641263, b: 0.57481676, a: 1}
+  m_IndirectSpecularColor: {r: 0.44402242, g: 0.49316543, b: 0.5722324, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1029,6 +1029,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9e9da7b00302c04ba5d87dcfdf5b102, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  settings: {fileID: 11400000, guid: a1e8b7c36f7f791429b378f72d9d9873, type: 2}
 --- !u!114 &396397515
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1350,7 +1351,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -899.99994}
+  m_AnchoredPosition: {x: 0, y: -899.9999}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &644775677
@@ -3229,6 +3230,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1409111334}
   m_CullTransparentMesh: 1
+--- !u!1 &1474518628 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4047229118689388734, guid: c1035422f549a824eae82d67e60a0e74, type: 3}
+  m_PrefabInstance: {fileID: 1674282744}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1478740497
 GameObject:
   m_ObjectHideFlags: 0
@@ -3278,7 +3284,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76c392e42b5098c458856cdf6ecaaaa1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_FirstSelected: {fileID: 0}
+  m_FirstSelected: {fileID: 1474518628}
   m_sendNavigationEvents: 1
   m_DragThreshold: 10
 --- !u!4 &1478740500
@@ -4300,7 +4306,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7715497097217976694, guid: c1035422f549a824eae82d67e60a0e74, type: 3}
   m_PrefabInstance: {fileID: 1674282744}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1474518628}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
