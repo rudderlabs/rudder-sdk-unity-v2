@@ -271,7 +271,7 @@ namespace RudderStack.Unity
                 { "model", devModel },
                 { "type", osName.Substring(0, osName.IndexOf(' ')) },
                 { "id", SystemInfo.deviceUniqueIdentifier },
-                { "adTrackingEnabled", Config.GetAutoCollectAdvertId() },
+                { "adTrackingEnabled", false },
             };
 
 #if UNITY_ANDROID
@@ -321,7 +321,7 @@ namespace RudderStack.Unity
             }
 #endif
             
-            options.Context["userAgent"] = Config.GetUserAgent();
+            options.Context["userAgent"] = Config.Inner.GetUserAgent();
 
             options.Context["os"] = new Dict { { "name", osName }, };
 
