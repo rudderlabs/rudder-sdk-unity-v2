@@ -7,8 +7,11 @@
 <p align="center"><b>The Customer Data Platform for Developers</b></p>
 
 <p align="center">
-  <a href="https://search.maven.org/search?q=g:%22com.rudderstack.android.sdk%22%20AND%20a:%22core%22">
-    <img src="https://img.shields.io/maven-central/v/com.rudderstack.android.sdk/core.svg?label=Maven%20Central">
+  <a href="https://github.com/rudderlabs/rudder-sdk-unity-v2/releases">
+    <img src="https://img.shields.io/static/v1?label=Version&message=2.0.0&color=Green">
+    </a>
+  <a href="https://github.com/rudderlabs/rudder-sdk-unity-v2/releases">
+    <img src="https://img.shields.io/static/v1?label=Stability&message=Beta&color=105ed5">
     </a>
 </p>
 
@@ -81,4 +84,4 @@ More information on RudderStack can be found [**here**](https://github.com/rudde
 
 ## Contact us
 
-For more support on using the RudderStack Android SDK, you can [**contact us**](https://rudderstack.com/contact/) or start a conversation on our [**Slack**](https://rudderstack.com/join-rudderstack-slack-community) channel.
+For more support on using the RudderStack Unity SDK, [**contact us**](https://rudderstack.com/contact/) or start a conversation in our [**Community Slack**](https://rudderstack.com/join-rudderstack-slack-community).
