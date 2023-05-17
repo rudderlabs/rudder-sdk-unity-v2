@@ -176,15 +176,15 @@ namespace RudderStack.Unity
 
         public void Alias(string newId, RSOptions options)
         {
-            if (string.IsNullOrEmpty(UserId))
-            {
-                Logger.Error("The previous 'userId' is not valid.");
-                return;
-            }
-
             if (string.IsNullOrEmpty(newId))
             {
                 Logger.Error("Please supply a valid 'userId' to Alias.");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(UserId))
+            {
+                Logger.Error("Previously no 'userId' has been set.");
                 return;
             }
 
