@@ -1,94 +1,99 @@
-# RudderStack Analytics - Unity
-Check the [GitHub codebase](https://github.com/rudderlabs/rudder-sdk-unity-v2) to get a more hands-on understanding of the SDK.
+<p align="center">
+  <a href="https://rudderstack.com/">
+    <img src="https://user-images.githubusercontent.com/59817155/121357083-1c571300-c94f-11eb-8cc7-ce6df13855c9.png">
+  </a>
+</p>
 
-## Installing the Unity SDK
-To integrate the RudderStack Unity SDK with your project download rudder-sdk-unity.unitypackage from our [GitHub repository](https://github.com/rudderlabs/rudder-sdk-unity-v2) or import it from Unity AssetStore
+<p align="center"><b>The Customer Data Platform for Developers</b></p>
 
-## QuickStart
-### SDK setup on website
+<p align="center">
+  <a href="https://github.com/rudderlabs/rudder-sdk-unity-v2/releases">
+    <img src="https://img.shields.io/static/v1?label=Version&message=2.0.0&color=Green">
+    </a>
+  <a href="https://github.com/rudderlabs/rudder-sdk-unity-v2/releases">
+    <img src="https://img.shields.io/static/v1?label=Stability&message=Beta&color=105ed5">
+    </a>
+</p>
 
-Sign up to RudderStack Cloud.
-Set up a .NET source in your dashboard. You should be able to see a write key for this source:
+<p align="center">
+  <b>
+    <a href="https://rudderstack.com">Website</a>
+    ·
+    <a href="https://www.rudderstack.com/docs/sources/event-streams/sdks/rudderstack-unity-sdk/v2/">Documentation</a>
+    ·
+    <a href="https://rudderstack.com/join-rudderstack-slack-community">Community Slack</a>
+  </b>
+</p>
 
-![image](https://www.rudderstack.com/docs/images/event-stream-sources/dotnet-write-key-new.png)
+---
 
-### Test the SDK
 
-![image](https://lh3.googleusercontent.com/drive-viewer/AAOQEOShQkt6Ldl_F9BGs-s8LyKMnAdDejtLSbklUlFHi5-1e75piD0Z5dOSzHlzuQxZGuAknlcjBxT-T3yBJ9R4cPYm6B9QqA=s1600)
+# RudderStack Unity SDK
 
-Do everything in following order:
+The RudderStack Unity SDK lets you track your game event data on all the major platforms like Android, iOS, Windows, macOS, Xbox, and PlayStation.
 
-1. Open the scene `Assets/RudderStack/RudderAnalytics SDK/Examples/Example.unity`
-2. Run it
-3. Try to put the **Device Token** *(optionaly)*
-4. Try to put the **Advertising ID** *(optionaly)*
-5. Set **Data Plane URL** and **Write Key**
-6. Click **Initialize** button
-7. Enter **User ID** and click **Identify**
+For detailed documentation on the Unity SDK, click [**here**](https://www.rudderstack.com/docs/sources/event-streams/sdks/rudderstack-unity-sdk/v2/).
 
-Next you can test events *(right-top corner)*, aliasing, or automatic scene detection *(left-bottom corner)*
+## Prerequisites
 
-### Use the SDK in your project
+- Download and install the [Unity development kit](https://store.unity.com/download).
+- Sign up for [RudderStack Cloud](https://app.rudderstack.com/signup).
+- [Set up a Unity source](https://www.rudderstack.com/docs/dashboard-guides/sources/#adding-a-source) in your [RudderStack Cloud dashboard](https://app.rudderstack.com/). **Note the write key for this source**.
 
-1. Open the scene, which is going to be loaded first in your game
-2. Right click in Hierarchy -> RudderStack Object  
-   Or in top menu: GameObject -> RudderStack Object  
-   This object is going to be marked as `DontDestroyOnLoad` so you don't need to create it in other scenes.  
-   **In fact you should not create it more than once!**
-3. There are three components on the object.
-   You may disable `RS Screen View` or `Rs Logger`
-   by clicking on the check box in top left corner of the component if you don't need them.
+## Get started with the Unity SDK
 
-Next you should write the code.
-You may check `Assets/RudderStack/RudderAnalytics SDK/Examples/TestController.cs` for an example.
+1. [Download](https://github.com/rudderlabs/rudder-sdk-unity-v2/releases) `rudder-sdk-unity.unitypackage`.
 
-#### Initialization
+2. Import the downloaded package to your project. From the **Assets** menu, go to **Import Package**  > **Custom Package...**.
 
-The analytics should be initialized every time your game starts.
+3. Select `rudder-sdk-unity.unitypackage` from the downloaded location and click **Open**.
 
+4. Click **Import** in the import popup.
+
+5. Add **RudderStack.prefab** file from the path `Assets/RudderStack/RudderAnalytics SDK/Prefabs/RudderStack.prefab` to every scene in your Unity app. Also, make sure that `RudderStack.prefab` is linked to `RSMaster`, `RSScreenView`, and `RSLogger` scripts.
+
+6. Import the SDK
 ```csharp
-var config = new RSConfig(dataPlaneUrl)
-    .SetGzip(true)                  // This is optional
-    .SetAutoCollectAdvertId(true);  // This is optional
-RSAnalytics.Initialize(writeKey, config);
+using RudderStack.Unity;
 ```
 
-#### Setting Device Token and Advertising Id
-
-**These values must be set before Initialization!**
-```csharp
-RSClient.PutAdvertisingId(advertisementId);
-RSClient.PutDeviceToken(deviceToken);
-```
-These values are going to be send only if you've initialized `RsAnalytics` with `SetAutoCollectAdvertId(true)` in `RSConfig`!
-
-#### Identifying the user
-
-The identification persists between runs so it should be done only once.
+7. Initialize the SDK as shown. Replace `WRITE_KEY` and `DATA_PLANE_URL` with the actual values obtained in the [SDK setup requirements](https://www.rudderstack.com/docs/sources/event-streams/sdks/rudderstack-unity-sdk/v2/#sdk-setup-requirements) section.
 
 ```csharp
-var traits = new Dict() { {"Trait 1", 0}, {"Trait 2", "E"} };
-RSAnalytics.Client.Identify(userId, traits);
+RSAnalytics.Initialize("WRITE_KEY",
+		new RSConfig(dataPlaneUrl: "DATA_PLANE_URL"));
+
+// for coroutine
+StartCoroutine(RSAnalytics.InitializeRoutine("WRITE_KEY",
+		new RSConfig(dataPlaneUrl: "DATA_PLANE_URL")));
 ```
 
-#### Tracking events
+## Sending events
+
+See the [documentation](https://www.rudderstack.com/docs/sources/event-streams/sdks/rudderstack-unity-sdk/v2/) for details on the supported events. 
+
+A sample `track` call is shown below:
 
 ```csharp
-RSAnalytics.Client.Track("Enemy killed", new Dictionary<string, object> { { "Exp", 22 }, {"Type", "Rat"} } );
+RSAnalytics.Client.Track("sample_track",
+                new Dictionary<string, object> {
+                { "key_1", "value_1" },
+                { "key_2", 4 },
+                { "key_3", 4.2 },
+                { "key_4", true }
+                });
 ```
-Similarly you can send such events as `Page`, `Screen`, `Group`.
 
-#### Changing User Id
+## Contribute
 
-To change the User Id use Alias:
+We would love to see you contribute to this project. Get more information on how to contribute [**here**](./CONTRIBUTING.md).
 
-```csharp
-RSAnalytics.Client.Alias(newUserId);
-```
-#### Deleting the user
+## About RudderStack
 
-```csharp
-RSAnalytics.Client.Reset();
-```
-After the user is reset its *id* and *traits* are lost.
-You have to identify them again by calling `Identify()`.
+[**RudderStack**](https://rudderstack.com/) is a **customer data platform for developers**. Our tooling makes it easy to deploy pipelines that collect customer data from every app, website and SaaS platform, then activate it in your warehouse and business tools.
+
+More information on RudderStack can be found [**here**](https://github.com/rudderlabs/rudder-server).
+
+## Contact us
+
+For more support on using the RudderStack Unity SDK, [**contact us**](https://rudderstack.com/contact/) or start a conversation in our [**Community Slack**](https://rudderstack.com/join-rudderstack-slack-community).
