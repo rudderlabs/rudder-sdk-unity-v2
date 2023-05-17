@@ -19,7 +19,7 @@
   <b>
     <a href="https://rudderstack.com">Website</a>
     ·
-    <a href="https://rudderstack.com/docs/stream-sources/rudderstack-sdk-integration-guides/rudderstack-android-sdk/">Documentation</a>
+    <a href="https://www.rudderstack.com/docs/sources/event-streams/sdks/rudderstack-unity-sdk/v2/">Documentation</a>
     ·
     <a href="https://rudderstack.com/join-rudderstack-slack-community">Community Slack</a>
   </b>
@@ -30,9 +30,15 @@
 
 # RudderStack Unity SDK
 
-RudderStack's Unity SDK lets you track event data from your Android applications. After integrating the SDK, you will be able to send the event data to your preferred destination/s such as Google Analytics, Amplitude, and more.
+The RudderStack Unity SDK is a wrapper for the RudderStack [Android SDK](https://www.rudderstack.com/docs/sources/event-streams/sdks/rudderstack-android-sdk/) and [iOS SDK](https://www.rudderstack.com/docs/sources/event-streams/sdks/rudderstack-ios-sdk/). It is used for tracking game event data.
 
 For detailed documentation on the Unity SDK, click [**here**](https://www.rudderstack.com/docs/sources/event-streams/sdks/rudderstack-unity-sdk/v2/).
+
+## Prerequisites
+
+- Download and install the [Unity development kit](https://store.unity.com/download).
+- Sign up for [RudderStack Cloud](https://app.rudderstack.com/signup).
+- [Set up a Unity source](https://www.rudderstack.com/docs/dashboard-guides/sources/#adding-a-source) in your [RudderStack Cloud dashboard](https://app.rudderstack.com/). **Note the write key for this source**.
 
 ## Get started with the Unity SDK
 
@@ -51,7 +57,8 @@ For detailed documentation on the Unity SDK, click [**here**](https://www.rudder
 using RudderStack.Unity;
 ```
 
-7. Initialize the SDK as shown. Replace `WRITE_KEY` and `DATA_PLANE_URL` with the actual values obtained in the [SDK setup requirements](#sdk-setup-requirements) section.
+7. Initialize the SDK as shown. Replace `WRITE_KEY` and `DATA_PLANE_URL` with the actual values obtained in the [SDK setup requirements](https://www.rudderstack.com/docs/sources/event-streams/sdks/rudderstack-unity-sdk/v2/#sdk-setup-requirements) section.
+
 ```csharp
 RSAnalytics.Initialize("WRITE_KEY",
 		new RSConfig(dataPlaneUrl: "DATA_PLANE_URL"));
@@ -62,6 +69,11 @@ StartCoroutine(RSAnalytics.InitializeRoutine("WRITE_KEY",
 ```
 
 ## Sending events
+
+See the [documentation](https://www.rudderstack.com/docs/sources/event-streams/sdks/rudderstack-unity-sdk/v2/) for details on the supported events. 
+
+A sample `track` call is shown below:
+
 ```csharp
 RSAnalytics.Client.Track("sample_track",
                 new Dictionary<string, object> {
