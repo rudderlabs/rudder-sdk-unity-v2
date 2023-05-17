@@ -46,7 +46,6 @@ namespace Examples.RudderStack.Unity
         public void Initialize() =>
             RSAnalytics.Initialize(writeKey.text,
                 new RSConfig(dataPlaneUrl: dataPlane.text)
-                    .SetAutoCollectAdvertId(true)
                     .SetGzip(true)
                     .SetLogLevel(Logger.Level.DEBUG)
                     .SetControlPlaneUrl("https://api.rudderlabs.com")
