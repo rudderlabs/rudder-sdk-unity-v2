@@ -31,6 +31,13 @@ namespace RudderStack.Unity
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
             }
+#if UNITY_WSA
+            if (!PlayerSettings.WSA.GetCapability(PlayerSettings.WSACapability.InternetClient))
+            {
+                throw new BuildFailedException("RudderStack SDK: InternetClient capability required." +
+                                               "\n Set true PlayerSettings -> Publishing Settings -> Capabilities -> InternetClient");
+            }
+#endif
         }
     }
 }
