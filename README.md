@@ -30,7 +30,7 @@
 
 # RudderStack Unity SDK
 
-The RudderStack Unity SDK is a wrapper for the RudderStack [Android SDK](https://www.rudderstack.com/docs/sources/event-streams/sdks/rudderstack-android-sdk/) and [iOS SDK](https://www.rudderstack.com/docs/sources/event-streams/sdks/rudderstack-ios-sdk/). It is used for tracking game event data.
+The RudderStack Unity SDK lets you track your game event data on all the major platforms like Android, iOS, Windows, macOS, Xbox, and PlayStation.
 
 For detailed documentation on the Unity SDK, click [**here**](https://www.rudderstack.com/docs/sources/event-streams/sdks/rudderstack-unity-sdk/v2/).
 
