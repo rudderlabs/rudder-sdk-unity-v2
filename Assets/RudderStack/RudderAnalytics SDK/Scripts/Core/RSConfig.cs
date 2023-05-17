@@ -39,6 +39,11 @@ namespace RudderStack.Unity
                 true,
                 null,
                 null);
+            _controlPlaneUrl = controlPlaneUrl;
+            _recordScreenViews = recordScreenViews;
+            _dbThresholdCount = dbThresholdCount;
+            _logLevel = logLevel;
+            _trackLifeCycleEvents = trackLifeCycleEvents;
         }
 
         public RSConfig SetDbThresholdCount(int count)
