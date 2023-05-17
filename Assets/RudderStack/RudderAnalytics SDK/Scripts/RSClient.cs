@@ -103,7 +103,7 @@ namespace RudderStack.Unity
 
         public void Identify(string userId, IDictionary<string, object> traits, RSOptions options)
         {
-            if (string.IsNullOrEmpty(userId) && string.IsNullOrEmpty(AnonymousId))
+            if (string.IsNullOrEmpty(userId))
             {
                 Logger.Error("Please supply a valid userId to Identify.");
                 return;
