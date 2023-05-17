@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8ab3a9eb1d8701342bd82fa9edd1c7c2, type: 3}
   m_Name: Settings
   m_EditorClassIdentifier: 
-  androidCode: 2
+  androidCode: 1
   iosCode: 0
-  packageName: com.DefaultCompany.RudderStack_PSXbox
+  packageName: com.RudderStack.RudderStack-PS-Xbox

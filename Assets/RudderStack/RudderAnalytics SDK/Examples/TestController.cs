@@ -29,12 +29,11 @@ namespace Examples.RudderStack.Unity
                 new RSConfig(dataPlaneUrl: "https://rudderstacz.dataplane.rudderstack.com")
                     //.SetControlPlaneUrl("https://api.rudderlabs.com")
                     //.SetLogLevel(Logger.Level.DEBUG)
-                    //.SetFlushAt(2)
                     //.SetFlushQueueSize(1)
                     //.SetSleepCount(5)
                     //.SetDbThresholdCount(1)
                     //.SetGzip(false)
-                    .SetTrackLifeCycleEvents(false)
+                    //.SetTrackLifeCycleEvents(true)
                     //.SetRecordScreenViews(false)
                     );
 
