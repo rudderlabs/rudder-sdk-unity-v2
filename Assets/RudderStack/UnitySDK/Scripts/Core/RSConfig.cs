@@ -1,5 +1,3 @@
-using System;
-
 namespace RudderStack.Unity
 {
     public class RSConfig

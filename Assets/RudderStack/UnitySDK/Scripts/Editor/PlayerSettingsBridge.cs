@@ -10,7 +10,7 @@ namespace RudderStack.Unity
         public int callbackOrder { get; }
         public void OnPreprocessBuild(BuildReport report)
         {
-            const string path = "Assets/RudderStack/RudderAnalytics SDK/Settings.asset";
+            const string path = "Assets/RudderStack/UnitySDK/Settings.asset";
 
             var settings = AssetDatabase.LoadAssetAtPath<RSPlayerSettings>(path);
 
