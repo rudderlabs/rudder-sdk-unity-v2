@@ -7,12 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using RudderStack.Flush;
-using RudderStack.Model;
-using RudderStack.Request;
 using UnityEngine;
-using UnityEngine.Networking;
 
 namespace RudderStack.Unity
 {

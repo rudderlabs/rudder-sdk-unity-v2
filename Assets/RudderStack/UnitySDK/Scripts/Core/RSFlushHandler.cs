@@ -6,7 +6,6 @@ using RudderStack.Flush;
 using RudderStack.Model;
 using RudderStack.Request;
 using RudderStack.Unity.Utility;
-using Unity.VisualScripting;
 using UnityEngine;
 using Timer = System.Threading.Timer;
 
