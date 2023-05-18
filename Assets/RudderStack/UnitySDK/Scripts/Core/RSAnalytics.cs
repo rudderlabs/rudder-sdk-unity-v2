@@ -1,11 +1,15 @@
 using System;
 using System.Collections;
-using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
+using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RudderStack.Flush;
+using RudderStack.Model;
 using RudderStack.Request;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -32,15 +36,29 @@ namespace RudderStack.Unity
         {
             if (_client != null)
                 yield break;
-            
-            if(string.IsNullOrEmpty(writeKey) || config is null || string.IsNullOrEmpty(config.Inner.DataPlaneUrl))
+
+            if (string.IsNullOrEmpty(writeKey) || config is null || string.IsNullOrEmpty(config.Inner.DataPlaneUrl))
                 throw new InvalidOperationException("Please supply a valid writeKey and config to initialize.");
 
-            yield return FetchConfig(config, writeKey, sourceConfig =>
+            var sourceConfigTask = FetchConfig(config, writeKey);
+
+            yield return new WaitUntil(() => sourceConfigTask.IsCompleted);
+
+            var sourceConfig = sourceConfigTask.Result;
+
+            if (sourceConfig.HasValue == false)
             {
-                if (sourceConfig.source.enabled == false)
-                    throw new InvalidOperationException("The RudderStack source is disabled!");
+                Debug.LogError("Wrong write key");
                 
+                IAsyncFlushHandler flushHandler = new RSOfflineFlushHandler(config);
+                RudderAnalytics.Initialize(writeKey, config.Inner, flushHandler);
+                Client = new RSClient(RudderAnalytics.Client, config);
+            }
+            else
+            {
+                if (sourceConfig.Value.source.enabled == false)
+                    throw new InvalidOperationException("The RudderStack source is disabled!");
+
                 IRSRequestHandler requestHandler;
                 if (config.Inner.Send)
                 {
@@ -64,7 +82,13 @@ namespace RudderStack.Unity
                 RudderAnalytics.Initialize(writeKey, config.Inner, flushHandler);
                 Client = new RSClient(RudderAnalytics.Client, config);
                 requestHandler.Init(RudderAnalytics.Client, new HttpClient());
-            });
+            }
+        }
+
+        public static void Initialize(RSClient client)
+        {
+            RudderAnalytics.Initialize(client.Inner);
+            Client = new RSClient(RudderAnalytics.Client, client.Config);
         }
 
         public static void Dispose()
@@ -73,34 +97,36 @@ namespace RudderStack.Unity
             Client.Dispose();
         }
 
-        private static IEnumerator FetchConfig(RSConfig config, string writeKey, Action<RSSourceConfig> callback)
+        [ItemCanBeNull]
+        private static async Task<RSSourceConfig?> FetchConfig(RSConfig config, string writeKey)
         {
             if (string.IsNullOrEmpty(config.GetControlPlaneUrl()))
                 throw new ArgumentException($"Invalid URL {config}");
-            
+
             var uri = $"{config.GetControlPlaneUrl()}/sourceConfig?p=unity&v={VERSION}&w={writeKey}";
+            
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Basic", BasicAuthHeader(writeKey, string.Empty));
 
-            using var webRequest = UnityWebRequest.Get(uri);
+            var responseStr = "";
 
-            webRequest.SetRequestHeader("Authorization",
-                $"Basic {Convert.ToBase64String(Encoding.UTF8.GetBytes($"{writeKey}:"))}");
-            yield return webRequest.SendWebRequest();
+            var response = await client.GetAsync(uri).ConfigureAwait(false);
+            
+            if (response != null && response.Content != null)
+                responseStr = await response.Content.ReadAsStringAsync();
 
-            switch (webRequest.result)
-            {
-                case UnityWebRequest.Result.ConnectionError:
-                case UnityWebRequest.Result.DataProcessingError:
-                case UnityWebRequest.Result.ProtocolError:
-                    Debug.LogError($"ERROR: {webRequest.error}\n Message: {webRequest.downloadHandler.text}");
-                    throw new ArgumentException($"Invalid URL {config}");
-                case UnityWebRequest.Result.Success:
-                    callback.Invoke(JsonConvert.DeserializeObject<RSSourceConfig>(webRequest.downloadHandler.text));
-                    break;
-                case UnityWebRequest.Result.InProgress:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            if (System.Text.RegularExpressions.Regex.IsMatch(responseStr, ".*Invalid write key.*"))
+                return null;
+            if (response != null && response.StatusCode == HttpStatusCode.OK)
+                return JsonConvert.DeserializeObject<RSSourceConfig>(responseStr);
+
+            throw new System.Exception($"RudderStack: Error when trying to fetch config. {responseStr}");
+        }
+        
+        private static string BasicAuthHeader(string user, string pass)
+        {
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes($"{user}:{pass}"));
         }
     }
 }

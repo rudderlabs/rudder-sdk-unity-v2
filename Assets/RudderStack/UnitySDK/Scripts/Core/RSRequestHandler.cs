@@ -246,7 +246,6 @@ namespace RudderStack.Unity
                     HttpResponseMessage response = null;
                     var                 retry    = false;
                     
-                    Debug.Log("Batch Sent:\n" + json);
                     try
                     {
                         response = await _httpClient.PostAsync(uri, content).ConfigureAwait(false);
