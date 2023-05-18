@@ -42,9 +42,9 @@ namespace Examples.RudderStack.Unity
             RSOptions rudderOptions = new RSOptions();
             rudderOptions.SetIntegration("Firebase", true);
 
-            //RSAnalytics.Client.Identify("ios_unity_user_id");
+            RSAnalytics.Client.Identify("ios_unity_user_id");
             //RSAnalytics.Client.Identify("ios_unity_user_id", new Dictionary<string, object> { { "key_1", "value_1" }, { "key_2", 4 }, { "key_3", 4.2 }, { "key_4", true } });
-            RSAnalytics.Client.Identify("ios_unity_user_id", new Dictionary<string, object> { { "key_1", "value_1" }, { "key_2", 4 }, { "key_3", 4.2 }, { "key_4", true } }, rudderOptions);
+            //RSAnalytics.Client.Identify("ios_unity_user_id", new Dictionary<string, object> { { "key_1", "value_1" }, { "key_2", 4 }, { "key_3", 4.2 }, { "key_4", true } }, rudderOptions);
         }
 
         public void AliasUser()
@@ -52,8 +52,8 @@ namespace Examples.RudderStack.Unity
             RSOptions rudderOptions = new RSOptions();
             rudderOptions.SetIntegration("Firebase", true);
 
-            //RSAnalytics.Client.Alias("new_ios_unity_user_id");
-            RSAnalytics.Client.Alias("new_ios_unity_user_id_2", rudderOptions);
+            RSAnalytics.Client.Alias("new_ios_unity_user_id");
+            //RSAnalytics.Client.Alias("new_ios_unity_user_id_2", rudderOptions);
         }
 
         public void ResetUser()    => RSAnalytics.Client.Reset();
@@ -63,14 +63,14 @@ namespace Examples.RudderStack.Unity
             count++;
             RSOptions rudderOptions = new RSOptions();
             rudderOptions.SetIntegration("Firebase", true);
-            for (int i = 0; i < 60; i++)
-            {
-                RSAnalytics.Client.Track($"Track {i}");
-            }
+            //for (int i = 0; i < 60; i++)
+            //{
+            //    RSAnalytics.Client.Track($"Track {i}");
+            //}
 
-                //RSAnalytics.Client.Track($"Track {count}");
-                //RSAnalytics.Client.Track($"Track {count}", new Dictionary<string, object> { { "key_1", "value_1" }, });
-                //RSAnalytics.Client.Track($"Track {count}", new Dictionary<string, object> { { "key_1", "value_1" }, }, rudderOptions);
+            RSAnalytics.Client.Track($"Track {count}");
+            //RSAnalytics.Client.Track($"Track {count}", new Dictionary<string, object> { { "key_1", "value_1" }, });
+            //RSAnalytics.Client.Track($"Track {count}", new Dictionary<string, object> { { "key_1", "value_1" }, }, rudderOptions);
         }
 
         public void Page()
@@ -79,9 +79,9 @@ namespace Examples.RudderStack.Unity
             RSOptions rudderOptions = new RSOptions();
             rudderOptions.SetIntegration("Firebase", true);
 
-            //RSAnalytics.Client.Page($"Page {count}");
+            RSAnalytics.Client.Page($"Page {count}");
             //RSAnalytics.Client.Page($"Page {count}", new Dictionary<string, object> { { "key_1", "value_1" }, { "key_2", 4 }, { "key_3", 4.2 }, { "key_4", true } });
-            RSAnalytics.Client.Page($"Page {count}", new Dictionary<string, object> { { "key_1", "value_1" }, { "key_2", 4 }, { "key_3", 4.2 }, { "key_4", true } }, rudderOptions);
+            //RSAnalytics.Client.Page($"Page {count}", new Dictionary<string, object> { { "key_1", "value_1" }, { "key_2", 4 }, { "key_3", 4.2 }, { "key_4", true } }, rudderOptions);
         }
 
         public void Screen()
@@ -90,9 +90,9 @@ namespace Examples.RudderStack.Unity
             RSOptions rudderOptions = new RSOptions();
             rudderOptions.SetIntegration("Firebase", true);
 
-            //RSAnalytics.Client.Screen($"Screen {count}");
+            RSAnalytics.Client.Screen($"Screen {count}");
             //RSAnalytics.Client.Screen($"Screen {count}", new Dictionary<string, object> { { "key_1", "value_1" }, { "key_2", 4 }, { "key_3", 4.2 }, { "key_4", true } });
-            RSAnalytics.Client.Screen($"Screen {count}", new Dictionary<string, object> { { "key_1", "value_1" }, { "key_2", 4 }, { "key_3", 4.2 }, { "key_4", true } }, rudderOptions);
+            //RSAnalytics.Client.Screen($"Screen {count}", new Dictionary<string, object> { { "key_1", "value_1" }, { "key_2", 4 }, { "key_3", 4.2 }, { "key_4", true } }, rudderOptions);
         }
 
         public void Group()
@@ -100,9 +100,9 @@ namespace Examples.RudderStack.Unity
             RSOptions rudderOptions = new RSOptions();
             rudderOptions.SetIntegration("Firebase", true);
 
-            //RSAnalytics.Client.Group("group_id");
+            RSAnalytics.Client.Group("group_id");
             //RSAnalytics.Client.Group("group_id", new Dictionary<string, object> { { "key_1", "value_1" }, { "key_2", 4 }, { "key_3", 4.2 }, { "key_4", true } });
-            RSAnalytics.Client.Group("group_id", new Dictionary<string, object> { { "key_1", "value_1" }, { "key_2", 4 }, { "key_3", 4.2 }, { "key_4", true } }, rudderOptions);
+            //RSAnalytics.Client.Group("group_id", new Dictionary<string, object> { { "key_1", "value_1" }, { "key_2", 4 }, { "key_3", 4.2 }, { "key_4", true } }, rudderOptions);
         }
 
         public void SwitchScene() => SceneManager.LoadScene("RudderStack/RudderAnalytics SDK/Examples/Example 1");
