@@ -73,3 +73,5 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 .vsconfig
 .DS_Store
+ENV.json
+ENV.json.meta

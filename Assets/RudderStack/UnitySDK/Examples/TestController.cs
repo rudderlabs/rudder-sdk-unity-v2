@@ -1,16 +1,29 @@
 using System.Collections.Generic;
+using Newtonsoft.Json;
+using System.IO;
 using RudderStack.Model;
 using RudderStack.Unity;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using static UnityEditor.Progress;
 using Logger = RudderStack.Logger;
+using System;
 
 namespace Examples.RudderStack.Unity
 {
 
     public class TestController : MonoBehaviour
     {
+        public class RSEnv
+        {
+            public string WRITE_KEY;
+            public string PROD_DATA_PLANE_URL;
+            public string DEV_DATA_PLANE_URL;
+            public string DEV_CONTROL_PLANE_URL;
+            public string LOCAL_DATA_PLANE_URL;
+        }
+
         private int count = 0;
 
         private void Start()
@@ -24,26 +37,34 @@ namespace Examples.RudderStack.Unity
 
         public void PutDeviceToken() => RSClient.PutDeviceToken("ios_device_token");
 
-        public void Initialize() =>
-            RSAnalytics.Initialize("2OmDuHamX06zSuHObnMf8QQbvSW",
-                new RSConfig(dataPlaneUrl: "https://rudderstacz.dataplane.rudderstack.com")
-                    //.SetControlPlaneUrl("https://api.rudderlabs.com")
+        public void Initialize()
+        {
+            // Copy SAMPLE_ENV.json and rename it to ENV.json. Fill the required details.
+            using (StreamReader r = new StreamReader("Assets/RudderStack/UnitySDK/Examples/ENV.json"))
+            {
+                string json = r.ReadToEnd();
+                RSEnv rsEnv = JsonConvert.DeserializeObject<RSEnv>(json);
+                RSAnalytics.Initialize(rsEnv.WRITE_KEY,
+                    new RSConfig()
+                    .SetDataPlaneUrl(rsEnv.PROD_DATA_PLANE_URL)
+                    //.SetControlPlaneUrl(rsEnv.DEV_CONTROL_PLANE_URL)
                     //.SetLogLevel(Logger.Level.DEBUG)
-                    //.SetFlushQueueSize(1)
                     //.SetSleepCount(5)
                     //.SetDbThresholdCount(1)
                     //.SetGzip(false)
                     //.SetTrackLifeCycleEvents(true)
                     //.SetRecordScreenViews(false)
-                    );
+                );
+            }
+        }
 
         public void IdentifyUser()
         {
             RSOptions rudderOptions = new RSOptions();
             rudderOptions.SetIntegration("Firebase", true);
 
-            RSAnalytics.Client.Identify("ios_unity_user_id");
-            //RSAnalytics.Client.Identify("ios_unity_user_id", new Dictionary<string, object> { { "key_1", "value_1" }, { "key_2", 4 }, { "key_3", 4.2 }, { "key_4", true } });
+            //RSAnalytics.Client.Identify("ios_unity_user_id");
+            RSAnalytics.Client.Identify("ios_unity_user_id", new Dictionary<string, object> { { "key_1", "value_1" }, { "key_2", 4 }, { "key_3", 4.2 }, { "key_4", true } });
             //RSAnalytics.Client.Identify("ios_unity_user_id", new Dictionary<string, object> { { "key_1", "value_1" }, { "key_2", 4 }, { "key_3", 4.2 }, { "key_4", true } }, rudderOptions);
         }
 
@@ -105,8 +126,8 @@ namespace Examples.RudderStack.Unity
             //RSAnalytics.Client.Group("group_id", new Dictionary<string, object> { { "key_1", "value_1" }, { "key_2", 4 }, { "key_3", 4.2 }, { "key_4", true } }, rudderOptions);
         }
 
-        public void SwitchScene() => SceneManager.LoadScene("RudderStack/RudderAnalytics SDK/Examples/Example 1");
+        public void SwitchScene() => SceneManager.LoadScene("RudderStack/UnitySDK/Examples/Example 1");
 
-        public void SwitchBack() => SceneManager.LoadScene("RudderStack/RudderAnalytics SDK/Examples/Example");
+        public void SwitchBack() => SceneManager.LoadScene("RudderStack/UnitySDK/Examples/Example");
     }
 }

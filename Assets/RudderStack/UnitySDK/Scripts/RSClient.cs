@@ -78,9 +78,13 @@ namespace RudderStack.Unity
         internal RSClient(RudderClient innerClient, RSConfig config)
         {
             Inner      = innerClient;
-            UserId     = PlayerPrefs.GetString(UserIdKey);
-            UserTraits = JsonConvert.DeserializeObject<IDictionary<string, object>>(PlayerPrefs.GetString(TraitsKey));
             Config     = config;
+
+            if (PlayerPrefs.HasKey(UserIdKey))
+                UserId = PlayerPrefs.GetString(UserIdKey);
+
+            if (PlayerPrefs.HasKey(TraitsKey))
+                UserTraits = JsonConvert.DeserializeObject<IDictionary<string, object>>(PlayerPrefs.GetString(TraitsKey));
 
             if (PlayerPrefs.HasKey(AnonIdKey))
                 _anonymousId = PlayerPrefs.GetString(AnonIdKey);

@@ -1,0 +1,7 @@
+﻿{
+    "WRITE_KEY": "",
+    "PROD_DATA_PLANE_URL": "",
+    "DEV_DATA_PLANE_URL": "",
+    "DEV_CONTROL_PLANE_URL": "",
+    "LOCAL_DATA_PLANE_URL": ""
+}
