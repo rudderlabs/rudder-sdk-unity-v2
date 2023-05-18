@@ -66,12 +66,6 @@ namespace RudderStack.Unity
             });
         }
 
-        //public static void Initialize(RSClient client)
-        //{
-        //    RudderAnalytics.Initialize(client.Inner);
-        //    Client = new RSClient(RudderAnalytics.Client, client.Config);
-        //}
-
         public static void Dispose()
         {
             RudderAnalytics.Dispose();
