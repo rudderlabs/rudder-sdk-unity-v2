@@ -11,11 +11,8 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using RudderStack.Exception;
 using RudderStack.Model;
-using RudderStack.Request;
-using Debug = UnityEngine.Debug;
 using WebProxy = RudderStack.Request.WebProxy;
 
 

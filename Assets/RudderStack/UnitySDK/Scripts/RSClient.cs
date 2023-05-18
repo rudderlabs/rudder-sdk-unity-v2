@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NodaTime;
 using RudderStack.Model;
 using RudderStack.Stats;
 using UnityEngine;
-using UnityEngine.Networking;
 
 namespace RudderStack.Unity
 {

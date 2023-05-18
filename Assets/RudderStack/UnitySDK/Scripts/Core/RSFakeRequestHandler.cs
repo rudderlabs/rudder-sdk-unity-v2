@@ -1,7 +1,6 @@
 #if NET35
 #else
 using System.Net.Http;
-using System.Net.Http.Headers;
 #endif
 using System;
 using System.Threading.Tasks;
