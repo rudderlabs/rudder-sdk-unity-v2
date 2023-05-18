@@ -37,7 +37,7 @@ namespace RudderStack.Unity
             if (_client != null)
                 yield break;
 
-            if (string.IsNullOrEmpty(writeKey) || config is null || string.IsNullOrEmpty(config.Inner.DataPlaneUrl))
+            if (string.IsNullOrEmpty(writeKey) || config is null || string.IsNullOrEmpty(config.Inner.GetHost()))
                 throw new InvalidOperationException("Please supply a valid writeKey and config to initialize.");
 
             var sourceConfigTask = FetchConfig(config, writeKey);
@@ -62,11 +62,11 @@ namespace RudderStack.Unity
                 IRSRequestHandler requestHandler;
                 if (config.Inner.Send)
                 {
-                    if (config.Inner.MaxRetryTime.HasValue)
-                        requestHandler = new RSRequestHandler(config.Inner.Timeout,
-                            new RSBacko(Convert.ToInt32(config.Inner.MaxRetryTime.Value.TotalSeconds) * 1000));
+                    if (config.Inner.GetMaxRetryTime().HasValue)
+                        requestHandler = new RSRequestHandler(config.Inner.GetTimeout(),
+                            new RSBacko(Convert.ToInt32(config.Inner.GetMaxRetryTime().Value.TotalSeconds) * 1000));
                     else
-                        requestHandler = new RSRequestHandler(config.Inner.Timeout);
+                        requestHandler = new RSRequestHandler(config.Inner.GetTimeout());
                 }
                 else
                 {
@@ -75,7 +75,7 @@ namespace RudderStack.Unity
 
                 IBatchFactory batchFactory = new SimpleBatchFactory(writeKey);
 
-                IAsyncFlushHandler flushHandler = config.Inner.Async
+                IAsyncFlushHandler flushHandler = config.Inner.GetAsync()
                     ? new RSFlushHandler(batchFactory, requestHandler, config)
                     : new BlockingFlushHandler(batchFactory, requestHandler);
 
