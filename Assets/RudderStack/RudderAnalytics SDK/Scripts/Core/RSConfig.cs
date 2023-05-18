@@ -94,20 +94,6 @@ namespace RudderStack.Unity
 
         internal bool GetRecordScreenViews() => _recordScreenViews;
 
-
-        /// <summary>
-        /// Sets the maximum amount of items that can be in the queue before no more are accepted.
-        /// </summary>
-        /// <param name="flushQueueSize"></param>
-        /// <returns></returns>
-        public RSConfig SetFlushQueueSize(int flushQueueSize)
-        {
-            Inner.SetMaxQueueSize(flushQueueSize);
-            return this;
-        }
-
-        internal int GetFlushQueueSize() => Inner.GetMaxQueueSize();
-
         /// <summary>
         /// Sets the API request header uses GZip option.
         /// Enable this when the network is the bottleneck for your application (typically in client side applications).

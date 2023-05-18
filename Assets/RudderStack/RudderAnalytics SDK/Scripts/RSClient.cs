@@ -55,7 +55,7 @@ namespace RudderStack.Unity
             }
         }
 
-        public RudderClient Inner { get; }
+        internal RudderClient Inner { get; }
 
         public Statistics Statistics
         {
@@ -75,7 +75,7 @@ namespace RudderStack.Unity
             remove => Inner.Succeeded -= value;
         }
 
-        public RSClient(RudderClient innerClient, RSConfig config)
+        internal RSClient(RudderClient innerClient, RSConfig config)
         {
             Inner      = innerClient;
             UserId     = PlayerPrefs.GetString(UserIdKey);
@@ -86,11 +86,6 @@ namespace RudderStack.Unity
                 _anonymousId = PlayerPrefs.GetString(AnonIdKey);
             else
                 AnonymousId = Guid.NewGuid().ToString();
-        }
-
-        public string WriteKey
-        {
-            get => Inner.WriteKey;
         }
 
         public RSConfig Config { get; private set; }
