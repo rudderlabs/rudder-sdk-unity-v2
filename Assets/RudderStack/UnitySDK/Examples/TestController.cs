@@ -6,9 +6,9 @@ using RudderStack.Unity;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-//using static UnityEditor.Progress;
 using Logger = RudderStack.Logger;
 using System;
+using System.Xml.Linq;
 
 namespace Examples.RudderStack.Unity
 {
@@ -39,32 +39,21 @@ namespace Examples.RudderStack.Unity
 
         public void Initialize()
         {
-            string fileName = @"Assets/Resources/RUDDER_ENV.json";
-            //string directory = Path.GetDirectoryName(fileName);
-            //if (!Directory.Exists(directory))
-            //{
-            //    Directory.CreateDirectory(directory);
-            //}
-            //AssetDatabase.ImportAsset(fileName);
-            //TextAsset asset = Resources.Load("RUDDER_ENV").ToString();
+            //Copy SAMPLE_ENV.json and rename it to RUDDER_ENV.json under Assets folder. Fill the required details.
             RSEnv rsEnv = JsonConvert.DeserializeObject<RSEnv>(Resources.Load("RUDDER_ENV").ToString());
-            // Copy SAMPLE_ENV.json and rename it to RUDDER_ENV.json. Fill the required details.
-            //using (StreamReader r = new StreamReader("Assets/RudderStack/UnitySDK/Examples/RUDDER_ENV.json"))
-            //{
-            //    string json = r.ReadToEnd();
-            //    RSEnv rsEnv = JsonConvert.DeserializeObject<RSEnv>(json);
-                RSAnalytics.Initialize(rsEnv.WRITE_KEY,
-                    new RSConfig()
-                    .SetDataPlaneUrl(rsEnv.PROD_DATA_PLANE_URL)
-                    //.SetControlPlaneUrl(rsEnv.DEV_CONTROL_PLANE_URL)
-                    //.SetLogLevel(Logger.Level.DEBUG)
-                    //.SetSleepCount(5)
-                    //.SetDbThresholdCount(1)
-                    //.SetGzip(false)
-                    //.SetTrackLifeCycleEvents(true)
-                    //.SetRecordScreenViews(false)
-                );
-            //}
+
+            RSAnalytics.Initialize(rsEnv.WRITE_KEY,
+                new RSConfig()
+                .SetDataPlaneUrl(rsEnv.PROD_DATA_PLANE_URL)
+                //.SetControlPlaneUrl(rsEnv.DEV_CONTROL_PLANE_URL)
+                //.SetLogLevel(Logger.Level.DEBUG)
+                //.SetSleepCount(5)
+                //.SetDbThresholdCount(1)
+                //.SetGzip(false)
+                //.SetTrackLifeCycleEvents(true)
+                //.SetRecordScreenViews(false)
+            );
+
         }
 
         public void IdentifyUser()
