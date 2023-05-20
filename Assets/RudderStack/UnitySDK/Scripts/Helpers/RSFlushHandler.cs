@@ -43,10 +43,10 @@ namespace RudderStack.Unity
             _queue                 = new List<BaseAction>();
             _batchFactory          = batchFactory;
             _requestHandler        = requestHandler as IRSRequestHandler;
-            _maxBatchSize          = config.Inner.FlushAt;
+            _maxBatchSize          = config.Inner.GetFlushAt();
             _dbThresholdCount      = config.GetDbThresholdCount();
             _continue              = new CancellationTokenSource();
-            _flushIntervalInMillis = config.Inner.FlushIntervalInMillis;
+            _flushIntervalInMillis = config.Inner.GetFlushInterval();
 
             _timerSemaphore = new Semaphore(1, 1);
 

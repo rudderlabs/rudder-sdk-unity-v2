@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 namespace RudderStack.Unity
 {
     [Tooltip("Log automatically if a new scene is loaded.")]
-    public class RSScreenView : MonoBehaviour
+    public class RSScreenViewEvents : MonoBehaviour
     {
         private void OnEnable()
         {

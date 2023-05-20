@@ -25,7 +25,7 @@ namespace RudderStack.Unity
 
         public static void Initialize(string writeKey, RSConfig config)
         {
-            RSMaster.Instance.StartCoroutine(InitializeRoutine(writeKey, config));
+            RSLifecycleEvents.Instance.StartCoroutine(InitializeRoutine(writeKey, config));
         }
 
         public static IEnumerator InitializeRoutine(string writeKey, RSConfig config)

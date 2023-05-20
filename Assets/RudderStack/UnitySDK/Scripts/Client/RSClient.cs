@@ -296,14 +296,14 @@ namespace RudderStack.Unity
             {
                 { "name", Application.productName },
                 { "build", UnityEngine.Screen.width },
-                { "namespace", RSMaster.Instance.settings.packageName },
+                { "namespace", RSLifecycleEvents.Instance.settings.packageName },
                 { "version", Application.version },
             };
 
 #if UNITY_ANDROID
-            app["build"] = RSMaster.Instance.settings.androidCode;
+            app["build"] = RSLifecycleEvents.Instance.settings.androidCode;
 #elif UNITY_IOS
-            app["build"] = RSMaster.Instance.settings.iosCode;
+            app["build"] = RSLifecycleEvents.Instance.settings.iosCode;
 #endif
             options.Context["app"] = app;
 

@@ -35,7 +35,7 @@ namespace RudderStack.Unity
             if (args != null)
                 message += string.Concat(args.Keys.Select(x => $"\n\t {x}: {args[x]},"));
 
-            var logText = $"[RudderAnalytics] [{level}] {message} \n";
+            var logText = $"[RudderStack] [{level}] {message} \n";
 
             Jobs.Enqueue(() =>
             {

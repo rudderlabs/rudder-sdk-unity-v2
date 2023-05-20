@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 namespace RudderStack.Unity
 {
-    public class RSMaster : MonoBehaviour
+    public class RSLifecycleEvents : MonoBehaviour
     {
         public RSPlayerSettings settings;
         
@@ -14,7 +14,7 @@ namespace RudderStack.Unity
 
         private static bool opened;
 
-        public static RSMaster Instance
+        public static RSLifecycleEvents Instance
         {
             get;
             private set;

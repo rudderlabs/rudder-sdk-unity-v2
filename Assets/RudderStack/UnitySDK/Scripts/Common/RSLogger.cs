@@ -18,7 +18,7 @@ namespace RudderStack.Unity
             if (args != null) 
                 message += string.Concat(args.Keys.Select(x => $"\n\t {x}: {args[x]},"));
 
-            Debug.Log($"[RudderAnalytics] [{level}] {message}");
+            Debug.Log($"[RudderStack] [{level}] {message}");
         }
     }
 }

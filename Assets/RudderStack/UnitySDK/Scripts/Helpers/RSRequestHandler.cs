@@ -76,9 +76,9 @@ namespace RudderStack.Unity
             var handler = new HttpClientHandler();
 
             // Set proxy information
-            if (!string.IsNullOrEmpty(_client.Config.Proxy))
+            if (!string.IsNullOrEmpty(_client.Config.GetProxy()))
             {
-                handler.Proxy    = new WebProxy(_client.Config.Proxy);
+                handler.Proxy    = new WebProxy(_client.Config.GetProxy());
                 handler.UseProxy = true;
             }
 
@@ -86,7 +86,7 @@ namespace RudderStack.Unity
             _httpClient = httpClient ?? new HttpClient(handler) { Timeout = Timeout };
 
             // Send user agent in the form of {library_name}/{library_version} as per RFC 7231.
-            var szUserAgent = _client.Config.UserAgent;
+            var szUserAgent = _client.Config.GetUserAgent();
             _httpClient.DefaultRequestHeaders.Add("User-Agent", szUserAgent);
         }
 #endif
@@ -97,7 +97,7 @@ namespace RudderStack.Unity
             _backo.Reset();
             try
             {
-                var uri = new Uri(_client.Config.DataPlaneUrl + "/v1/batch");
+                var uri = new Uri(_client.Config.GetHost() + "/v1/batch");
 
                 // set the current request time
                 batch.SentAt = DateTime.UtcNow.ToString("o");
@@ -125,7 +125,7 @@ namespace RudderStack.Unity
                 var requestData = Encoding.UTF8.GetBytes(json);
 
                 // Compress request data if compression is set
-                if (_client.Config.Gzip)
+                if (_client.Config.GetGzip())
                 {
 #if NET35
                     _httpClient.Headers.Set(HttpRequestHeader.ContentEncoding, "gzip");
@@ -235,7 +235,7 @@ namespace RudderStack.Unity
 
                     var content = new ByteArrayContent(requestData);
                     content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-                    if (_client.Config.Gzip)
+                    if (_client.Config.GetGzip())
                     {
                         content.Headers.ContentEncoding.Add("gzip");
                     }
