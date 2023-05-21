@@ -73,5 +73,5 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 .vsconfig
 .DS_Store
-ENV.json
-ENV.json.meta
+RUDDER_ENV.json
+RUDDER_ENV.json.meta
