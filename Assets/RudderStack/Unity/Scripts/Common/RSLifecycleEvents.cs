@@ -100,7 +100,7 @@ namespace RudderStack.Unity
             if (!settings)
             {
                 settings = UnityEditor.AssetDatabase.LoadAssetAtPath<RSPlayerSettings>(
-                    "Assets/RudderStack/UnitySDK/Settings.asset");
+                    "Assets/RudderStack/Unity/Settings.asset");
             }
         }
         
@@ -109,7 +109,7 @@ namespace RudderStack.Unity
         {
             var instance = UnityEditor.PrefabUtility.InstantiatePrefab(
                 UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(
-                    "Assets/RudderStack/UnitySDK/Prefabs/RudderStack.prefab"));
+                    "Assets/RudderStack/Unity/Prefabs/RudderStack.prefab"));
             UnityEditor.Undo.RegisterCreatedObjectUndo(instance, "Create RS Object");
         }
         
