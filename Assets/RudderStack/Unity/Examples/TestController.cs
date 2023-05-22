@@ -39,14 +39,14 @@ namespace Examples.RudderStack.Unity
 
         public void Initialize()
         {
-            //Copy SAMPLE_ENV.json and rename it to RUDDER_ENV.json under Assets folder. Fill the required details.
+            //Copy SAMPLE_ENV.json and rename it to RUDDER_ENV.json under `Assets/RudderStack/Unity/Resources/` folder. Fill the required details.
             RSEnv rsEnv = JsonConvert.DeserializeObject<RSEnv>(Resources.Load("RUDDER_ENV").ToString());
 
             RSAnalytics.Initialize(rsEnv.WRITE_KEY,
                 new RSConfig()
                 .SetDataPlaneUrl(rsEnv.PROD_DATA_PLANE_URL)
                 //.SetControlPlaneUrl(rsEnv.DEV_CONTROL_PLANE_URL)
-                //.SetLogLevel(Logger.Level.DEBUG)
+                .SetLogLevel(Logger.Level.DEBUG)
                 //.SetSleepCount(5)
                 //.SetDbThresholdCount(1)
                 //.SetGzip(false)
@@ -124,8 +124,8 @@ namespace Examples.RudderStack.Unity
             //RSAnalytics.Client.Group("group_id", new Dictionary<string, object> { { "key_1", "value_1" }, { "key_2", 4 }, { "key_3", 4.2 }, { "key_4", true } }, rudderOptions);
         }
 
-        public void SwitchScene() => SceneManager.LoadScene("RudderStack/UnitySDK/Examples/Example 1");
+        public void SwitchScene() => SceneManager.LoadScene("RudderStack/Unity/Examples/Example 1");
 
-        public void SwitchBack() => SceneManager.LoadScene("RudderStack/UnitySDK/Examples/Example");
+        public void SwitchBack() => SceneManager.LoadScene("RudderStack/Unity/Examples/Example");
     }
 }
