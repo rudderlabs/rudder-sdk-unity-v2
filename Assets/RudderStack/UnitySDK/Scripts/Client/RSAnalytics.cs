@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using Examples.RudderStack.Unity;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using RudderStack.Flush;
@@ -15,8 +16,17 @@ namespace RudderStack.Unity
     public class RSAnalytics
     {
         private static RSClient _client;
-        public static  string   VERSION = "2.0.0.beta.1";
+        public static  string   VERSION;
 
+        static RSAnalytics()
+        {
+            var package = JsonConvert.DeserializeObject<RSPackage>(Resources.Load("package").ToString());
+            if(package != null) 
+                VERSION = package.Version;
+            else
+                Debug.LogError("Cannot read package.json in Resources. Please, reimport the project to restore this file");
+        }
+        
         public static RSClient Client
         {
             get => _client;
