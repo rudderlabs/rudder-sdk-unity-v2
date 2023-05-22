@@ -1,7 +1,0 @@
-{
-    "WRITE_KEY": "2OmDuHamX06zSuHObnMf8QQbvSW",
-    "PROD_DATA_PLANE_URL": "https://rudderstacz.dataplane.rudderstack.com",
-    "DEV_DATA_PLANE_URL": "",
-    "DEV_CONTROL_PLANE_URL": "",
-    "LOCAL_DATA_PLANE_URL": ""
-}
