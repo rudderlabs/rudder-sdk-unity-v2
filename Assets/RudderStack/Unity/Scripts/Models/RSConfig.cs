@@ -15,7 +15,6 @@ namespace RudderStack.Unity
         (
             string          dataPlaneUrl            = "https://hosted.rudderlabs.com",
             string          controlPlaneUrl         = "https://api.rudderlabs.com",
-            int             flushQueueSize          = 30,
             double          sleepCount              = 10.0,
             bool            gzip                    = true,
             int             dbThresholdCount        = 10000,
@@ -28,7 +27,7 @@ namespace RudderStack.Unity
                 dataPlaneUrl,
                 null,
                 null,
-                flushQueueSize,
+                10000,
                 20,
                 true,
                 1,
