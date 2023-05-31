@@ -50,7 +50,7 @@ For detailed documentation on the Unity SDK, click [**here**](https://www.rudder
 
 4. Click **Import** in the import popup.
 
-5. Add **RudderStack.prefab** file from the path `Assets/RudderStack/RudderAnalytics SDK/Prefabs/RudderStack.prefab` to every scene in your Unity app. Also, make sure that `RudderStack.prefab` is linked to `RSMaster`, `RSScreenView`, and `RSLogger` scripts.
+5. Add **RudderStack.prefab** file from the path `Assets/RudderStack/Unity/Prefabs/RudderStack.prefab` to every scene in your Unity app. Also, make sure that `RudderStack.prefab` is linked to `RSMaster`, `RSScreenView`, and `RSLogger` scripts.
 
 6. Import the SDK
 ```csharp
