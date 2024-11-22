@@ -34,6 +34,13 @@ namespace RudderStack.Unity
 
         public static void Initialize(string writeKey, RSConfig config)
         {
+            // Ensure RSLifecycleEvents is instantiated
+            if (RSLifecycleEvents.Instance == null)
+            {
+                var obj = new GameObject("RSLifecycleEvents");
+                obj.AddComponent<RSLifecycleEvents>();
+            }
+
             RSLifecycleEvents.Instance.StartCoroutine(InitializeRoutine(writeKey, config));
         }
 
