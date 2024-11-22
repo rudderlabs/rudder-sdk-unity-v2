@@ -111,6 +111,10 @@ namespace RudderStack.Unity
         public async Task FlushAsync()
         {
             _timerSemaphore.Release();
+            await Task.Run(async () =>
+            {
+                await FlushImpl();
+            });
         }
 
         private async Task FlushImpl()
