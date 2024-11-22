@@ -1,0 +1,4 @@
+<linker>
+    <assembly fullname="RudderAnalytics" preserve="all"/>
+    <assembly fullname="NodaTime" preserve="all"/>
+</linker>

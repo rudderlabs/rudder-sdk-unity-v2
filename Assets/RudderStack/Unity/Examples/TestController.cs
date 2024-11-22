@@ -40,7 +40,7 @@ namespace Examples.RudderStack.Unity
         public void Initialize()
         {
             //Copy SAMPLE_ENV.json and rename it to RUDDER_ENV.json under `Assets/RudderStack/Unity/Resources/` folder. Fill the required details.
-            RSEnv rsEnv = JsonConvert.DeserializeObject<RSEnv>(Resources.Load("RUDDER_ENV").ToString());
+            RSEnv rsEnv = JsonConvert.DeserializeObject<RSEnv>(Resources.Load("SAMPLE_ENV").ToString());
 
             RSAnalytics.Initialize(rsEnv.WRITE_KEY,
                 new RSConfig()
