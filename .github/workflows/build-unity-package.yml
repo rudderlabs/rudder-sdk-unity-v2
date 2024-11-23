@@ -1,45 +1,37 @@
 name: Build UnityPackage
-
+run-name: Creating a new .unitypackage for version 2022.3.16f1 🚀
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
-
 jobs:
   build-unitypackage:
+    name: Build UnityPackage
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Checkout the repository
-    - name: Checkout repository
-      uses: actions/checkout@v3
-    - run: |
-      echo "Assets/RudderStack.meta" > metaList
-      find Assets/RudderStack/ -name \*.meta >> metaList
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
+      - name: Setup Unity
+        uses: game-ci/unity-setup@v3
+        with:
+          unityVersion: '2022.3.16f1'
+          activateLicense: false
 
-    # Step 2: Set up Unity
-      uses: game-ci/unity-actions/setup@v2
-      with:
-        unityVersion: 2022.3.16f1
-
-    # Step 3: Run Unity in batch mode to export the package
-    - run: mkdir Builds
-    - name: Build .unitypackage
-      run: |
-        /opt/unity/Editor/Unity \
+      - name: Build UnityPackage
+        run: |
+          # Run Unity in batch mode to execute the export script
+          xvfb-run --auto-servernum --server-args="-screen 0 640x480x24" \
+          /opt/Unity/Editor/Unity \
           -batchmode \
           -nographics \
-          -quit \
-          -projectPath ./ \
-          -executeMethod PackageExporter.ExportPackage
+          -projectPath "$(pwd)" \
+          -executeMethod UnityPackageExporter.ExportPackage \
+          -quit
 
-    # Step 4: Upload the built package as an artifact
-    - name: Upload .unitypackage
-      uses: actions/upload-artifact@v3
-      with:
-        name: RudderStackUnityPackage
-        path: Builds/RudderStackUnity.unitypackage
+      - name: Upload UnityPackage
+        uses: actions/upload-artifact@v3
+        with:
+          name: RudderStackUnityPackage
+          path: RudderStackUnity.unitypackage
