@@ -15,6 +15,8 @@
     </a>
 </p>
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/rudderlabs/rudder-sdk-unity-v2)
+
 <p align="center">
   <b>
     <a href="https://rudderstack.com">Website</a>
