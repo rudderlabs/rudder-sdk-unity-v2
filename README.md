@@ -73,6 +73,32 @@ StartCoroutine(RSAnalytics.InitializeRoutine("WRITE_KEY",
 		new RSConfig(dataPlaneUrl: "DATA_PLANE_URL")));
 ```
 
+## Offline startup and recovery
+
+`InitializeRoutine` waits for the first source configuration request, with the SDK's
+request timeout (five seconds by default). A connection failure, timeout, HTTP 408,
+429, or 5xx response completes initialization with a client that stores events on
+disk. Delivery starts only after the control plane confirms that the source is
+enabled. Queued events use the existing storage limit.
+
+While events are queued, configuration retries run in the background. The retry
+delay grows from one second to a maximum of 60 seconds. Attempts run on the next
+flush cycle after that delay. Recovery uses the same client and queue, so callers
+do not need to initialize again. `Dispose` stops recovery.
+
+Invalid credentials, disabled sources, and malformed configuration are not treated
+as temporary network failures. During recovery, these responses stop configuration
+retries and leave events stored without sending. Correct the configuration and
+restart the SDK. Existing initialization errors for invalid arguments, a disabled
+source, or malformed configuration remain visible to callers.
+
+When event calls immediately follow initialization, wait for the coroutine:
+
+```csharp
+yield return RSAnalytics.InitializeRoutine("WRITE_KEY", new RSConfig(dataPlaneUrl: "DATA_PLANE_URL"));
+RSAnalytics.Client.Track("game started");
+```
+
 ## Sending events
 
 See the [documentation](https://www.rudderstack.com/docs/sources/event-streams/sdks/rudderstack-unity-sdk/v2/) for details on the supported events. 

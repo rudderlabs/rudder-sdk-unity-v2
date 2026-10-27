@@ -7,7 +7,6 @@ using RudderStack.Model;
 using RudderStack.Request;
 using RudderStack.Unity.Utility;
 using UnityEngine;
-using Timer = System.Threading.Timer;
 
 namespace RudderStack.Unity
 {
@@ -29,11 +28,12 @@ namespace RudderStack.Unity
         private readonly IRSRequestHandler       _requestHandler;
         private readonly CancellationTokenSource _continue;
         private readonly int                     _flushIntervalInMillis;
-        private          Timer                   _timer;
         private readonly RSStorageManager        _storageManager;
         private readonly int                     _dbThresholdCount;
 
-        private readonly Semaphore _timerSemaphore;
+        private readonly AutoResetEvent _flushSignal = new AutoResetEvent(false);
+        private Thread _worker;
+        private bool _disposed;
         
         private          bool   requestFailed;
         private readonly object _queueLock;
@@ -47,8 +47,6 @@ namespace RudderStack.Unity
             _dbThresholdCount      = config.GetDbThresholdCount();
             _continue              = new CancellationTokenSource();
             _flushIntervalInMillis = config.Inner.GetFlushInterval();
-
-            _timerSemaphore = new Semaphore(1, 1);
 
             _queueLock = new object();
 
@@ -68,53 +66,68 @@ namespace RudderStack.Unity
             _storageManager = new RSStorageManager(storageKey);
 
             _queue.AddRange(_storageManager.LoadFromFile());
-
-            new Thread(BlockSemaphore).Start();
-            new Thread(FlushCycle).Start();
         }
 
-        private void BlockSemaphore()
+        internal void Start()
         {
-            while (!_continue.Token.IsCancellationRequested)
+            lock (_queueLock)
             {
-                _timerSemaphore.WaitOne();
+                if (_disposed || _worker != null) return;
+                _worker = new Thread(FlushCycle) { IsBackground = true };
+                _worker.Start();
             }
         }
 
 
         private void FlushCycle()
         {
-            while (!_continue.Token.IsCancellationRequested)
+            try
             {
-                _timerSemaphore.WaitOne(_flushIntervalInMillis);
-
-                try
+                while (!_continue.IsCancellationRequested)
                 {
-                    FlushImpl().GetAwaiter().GetResult();
+                    _flushSignal.WaitOne(_flushIntervalInMillis);
+                    if (_continue.IsCancellationRequested) break;
+                    try
+                    {
+                        FlushImpl().GetAwaiter().GetResult();
+                    }
+                    catch (System.Exception e)
+                    {
+                        if (!_continue.IsCancellationRequested)
+                            Logger.Error("Flush couldn't be completed\n" + e.Message);
+                    }
                 }
-                catch (System.Exception e)
+            }
+            finally
+            {
+                lock (_queueLock)
                 {
-                    
-                    Logger.Error("Flush couldn't be completed\n" + e.Message);
+                    _flushSignal.Dispose();
+                    _continue.Dispose();
                 }
             }
         }
 
         /// <summary>
-        /// Blocks until all the messages are flushed
+        /// Requests a flush on the background worker.
         /// </summary>
         public void Flush()
         {
-            _timerSemaphore.Release();
+            lock (_queueLock)
+                if (!_disposed) _flushSignal.Set();
         }
 
-        public async Task FlushAsync()
+        public Task FlushAsync()
         {
-            _timerSemaphore.Release();
+            Flush();
+            return Task.CompletedTask;
         }
 
         private async Task FlushImpl()
         {
+            // A manual flush must not bypass backoff or repeatedly rewrite unchanged offline storage.
+            if (_requestHandler is RSRecoveringRequestHandler recovering && !recovering.CanMakeRequest)
+                return;
             lock (_queueLock) if (_queue.Count == 0) return;
 
             while (!_continue.Token.IsCancellationRequested)
@@ -148,8 +161,14 @@ namespace RudderStack.Unity
 
                 // make the request here
                 _requestHandler.BatchCompleted += OnRequestCompleted;
-                await _requestHandler.MakeRequest(batch);
-                _requestHandler.BatchCompleted -= OnRequestCompleted;
+                try
+                {
+                    await _requestHandler.MakeRequest(batch);
+                }
+                finally
+                {
+                    _requestHandler.BatchCompleted -= OnRequestCompleted;
+                }
 
                 if (requestFailed) // request failed! stop flashing and wait for the better occasion
                     break;
@@ -159,36 +178,31 @@ namespace RudderStack.Unity
             requestFailed = false;
 
             // save to file
-            lock (_queueLock) _storageManager.SaveToFile(_queue);
+            lock (_queueLock) if (!_disposed) _storageManager.SaveToFile(_queue);
         }
 
         private void OnRequestCompleted(Batch batch, BatchResult result)
         {
-            Logger.Debug($"Request completed! Result: {result}");
-            switch (result)
+            lock (_queueLock)
             {
-                case BatchResult.WrongKey:
+                if (_disposed) return;
+                Logger.Debug($"Request completed! Result: {result}");
+                switch (result)
                 {
-                    requestFailed = true;
-                    _storageManager.ClearFile();
-                    lock (_queueLock) _queue.Clear();
-                    break;
-                }
-                case BatchResult.Success:
-                {
-                    lock (_queueLock)
-                    {
+                    case BatchResult.WrongKey:
+                        requestFailed = true;
+                        _storageManager.ClearFile();
+                        _queue.Clear();
+                        break;
+                    case BatchResult.Success:
                         foreach (var action in batch.batch)
                             _queue.Remove(action);
-                    
                         _storageManager.SaveToFile(_queue);
-                    }
-
-                    break;
+                        break;
+                    default:
+                        requestFailed = true;
+                        break;
                 }
-                default:
-                    requestFailed = true;
-                    break;
             }
         }
 
@@ -205,6 +219,7 @@ namespace RudderStack.Unity
             bool flushRequired;
             lock (_queueLock)
             {
+                if (_disposed) return;
                 if (_queue.Count < _dbThresholdCount)
                 {
                     _queue.Add(action);
@@ -230,12 +245,19 @@ namespace RudderStack.Unity
 
         public void Dispose()
         {
-            Logger.Debug("Disposing AsyncIntervalFlushHandler");
-            _timer?.Dispose();
-#if !NET35
-            _timerSemaphore?.Dispose();
-#endif
-            _continue?.Cancel();
+            lock (_queueLock)
+            {
+                if (_disposed) return;
+                _disposed = true;
+                _continue.Cancel();
+                (_requestHandler as IDisposable)?.Dispose();
+                _flushSignal.Set();
+                if (_worker == null)
+                {
+                    _flushSignal.Dispose();
+                    _continue.Dispose();
+                }
+            }
         }
 
     }

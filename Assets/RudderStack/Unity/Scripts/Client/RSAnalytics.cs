@@ -1,11 +1,7 @@
 using System;
 using System.Collections;
-using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Threading.Tasks;
-using JetBrains.Annotations;
+using System.Threading;
 using Newtonsoft.Json;
 using RudderStack.Flush;
 using UnityEngine;
@@ -15,17 +11,18 @@ namespace RudderStack.Unity
     public class RSAnalytics
     {
         private static RSClient _client;
-        public static  string   VERSION;
+        private static CancellationTokenSource _initialization;
+        public static string VERSION;
 
         static RSAnalytics()
         {
             var package = JsonConvert.DeserializeObject<RSPackage>(Resources.Load("package").ToString());
-            if(package != null) 
+            if (package != null)
                 VERSION = package.Version;
             else
                 Debug.LogError("Cannot read package.json in Resources. Please, reimport the project to restore this file");
         }
-        
+
         public static RSClient Client
         {
             get => _client;
@@ -42,51 +39,77 @@ namespace RudderStack.Unity
             if (_client != null)
                 yield break;
 
+            while (_initialization != null)
+            {
+                var pending = _initialization;
+                var pendingToken = pending.Token;
+                yield return new WaitUntil(() => !ReferenceEquals(_initialization, pending));
+                if (pendingToken.IsCancellationRequested || _client != null)
+                    yield break;
+            }
+
             if (string.IsNullOrEmpty(writeKey) || config is null || string.IsNullOrEmpty(config.Inner.GetHost()))
                 throw new InvalidOperationException("Please supply a valid writeKey and config to initialize.");
+            if (!Uri.TryCreate(config.GetControlPlaneUrl(), UriKind.Absolute, out var controlPlaneUri) ||
+                (controlPlaneUri.Scheme != Uri.UriSchemeHttp && controlPlaneUri.Scheme != Uri.UriSchemeHttps))
+                throw new ArgumentException("Please supply a valid HTTP(S) control plane URL.");
 
-            var sourceConfigTask = FetchConfig(config, writeKey);
-
-            yield return new WaitUntil(() => sourceConfigTask.IsCompleted);
-
-            var sourceConfig = sourceConfigTask.Result;
-
-            if (sourceConfig.HasValue == false)
+            var cancellation = new CancellationTokenSource();
+            _initialization = cancellation;
+            RSSourceConfigFetcher fetcher = null;
+            try
             {
-                Debug.LogError("Wrong write key");
-                
-                IAsyncFlushHandler flushHandler = new RSOfflineFlushHandler(config);
-                RudderAnalytics.Initialize(writeKey, config.Inner, flushHandler);
-                Client = new RSClient(RudderAnalytics.Client, config);
-            }
-            else
-            {
-                if (sourceConfig.Value.source.enabled == false)
-                    throw new InvalidOperationException("The RudderStack source is disabled!");
+                fetcher = new RSSourceConfigFetcher(config, writeKey);
+                var sourceConfigTask = fetcher.FetchAsync(cancellation.Token);
+                yield return new WaitUntil(() => sourceConfigTask.IsCompleted || cancellation.IsCancellationRequested);
+                if (cancellation.IsCancellationRequested || _client != null)
+                    yield break;
 
-                IRSRequestHandler requestHandler;
-                if (config.Inner.Send)
+                var status = sourceConfigTask.GetAwaiter().GetResult();
+                if (status == RSSourceConfigStatus.InvalidWriteKey)
                 {
-                    if (config.Inner.GetMaxRetryTime().HasValue)
-                        requestHandler = new RSRequestHandler(config.Inner.GetTimeout(),
-                            new RSBacko(Convert.ToInt32(config.Inner.GetMaxRetryTime().Value.TotalSeconds) * 1000));
-                    else
-                        requestHandler = new RSRequestHandler(config.Inner.GetTimeout());
+                    Debug.LogError("Wrong write key");
+                    RudderAnalytics.Initialize(writeKey, config.Inner, new RSOfflineFlushHandler(config));
+                    Client = new RSClient(RudderAnalytics.Client, config);
+                    yield break;
                 }
-                else
+                if (status == RSSourceConfigStatus.Disabled)
+                    throw new InvalidOperationException("The RudderStack source is disabled!");
+                if (status == RSSourceConfigStatus.InvalidResponse)
+                    throw new InvalidOperationException("RudderStack: Invalid source configuration response.");
+
+                IRSRequestHandler requestHandler = !config.Inner.Send
+                    ? (IRSRequestHandler)new RSFakeRequestHandler()
+                    : config.Inner.GetMaxRetryTime().HasValue
+                        ? new RSRequestHandler(config.Inner.GetTimeout(),
+                            new RSBacko(Convert.ToInt32(config.Inner.GetMaxRetryTime().Value.TotalSeconds) * 1000))
+                        : new RSRequestHandler(config.Inner.GetTimeout());
+
+                var recovering = status == RSSourceConfigStatus.RetryableFailure;
+                if (recovering)
                 {
-                    requestHandler = new RSFakeRequestHandler();
+                    Debug.LogWarning("RudderStack source configuration is temporarily unavailable. Events will be queued while configuration is retried.");
+                    requestHandler = new RSRecoveringRequestHandler(requestHandler, fetcher);
+                    fetcher = null; // The recovering handler owns the fetcher until enabled, rejected or disposed.
                 }
 
                 IBatchFactory batchFactory = new SimpleBatchFactory(writeKey);
-
-                IAsyncFlushHandler flushHandler = config.Inner.GetAsync()
-                    ? new RSFlushHandler(batchFactory, requestHandler, config)
+                // Pending configuration must use persistence, including for a blocking inner configuration.
+                IAsyncFlushHandler flushHandler = config.Inner.GetAsync() || recovering
+                    ? (IAsyncFlushHandler)new RSFlushHandler(batchFactory, requestHandler, config)
                     : new BlockingFlushHandler(batchFactory, requestHandler);
 
                 RudderAnalytics.Initialize(writeKey, config.Inner, flushHandler);
-                Client = new RSClient(RudderAnalytics.Client, config);
                 requestHandler.Init(RudderAnalytics.Client, new HttpClient());
+                Client = new RSClient(RudderAnalytics.Client, config);
+                (flushHandler as RSFlushHandler)?.Start();
+            }
+            finally
+            {
+                fetcher?.Dispose();
+                if (ReferenceEquals(_initialization, cancellation))
+                    _initialization = null;
+                cancellation.Dispose();
             }
         }
 
@@ -98,40 +121,10 @@ namespace RudderStack.Unity
 
         public static void Dispose()
         {
+            _initialization?.Cancel();
+            _initialization = null;
             RudderAnalytics.Dispose();
-            Client.Dispose();
-        }
-
-        [ItemCanBeNull]
-        private static async Task<RSSourceConfig?> FetchConfig(RSConfig config, string writeKey)
-        {
-            if (string.IsNullOrEmpty(config.GetControlPlaneUrl()))
-                throw new ArgumentException($"Invalid URL {config}");
-
-            var uri = $"{config.GetControlPlaneUrl()}/sourceConfig?p=unity&v={VERSION}&w={writeKey}";
-            
-            var client = new HttpClient();
-            client.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Basic", BasicAuthHeader(writeKey, string.Empty));
-
-            var responseStr = "";
-
-            var response = await client.GetAsync(uri).ConfigureAwait(false);
-            
-            if (response != null && response.Content != null)
-                responseStr = await response.Content.ReadAsStringAsync();
-
-            if (System.Text.RegularExpressions.Regex.IsMatch(responseStr, ".*Invalid write key.*"))
-                return null;
-            if (response != null && response.StatusCode == HttpStatusCode.OK)
-                return JsonConvert.DeserializeObject<RSSourceConfig>(responseStr);
-
-            throw new System.Exception($"RudderStack: Error when trying to fetch config. {responseStr}");
-        }
-        
-        private static string BasicAuthHeader(string user, string pass)
-        {
-            return Convert.ToBase64String(Encoding.UTF8.GetBytes($"{user}:{pass}"));
+            _client = null;
         }
     }
 }
