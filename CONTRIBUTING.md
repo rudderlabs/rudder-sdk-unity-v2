@@ -29,6 +29,34 @@ We prefer squash or rebase commits so that all changes from a branch are committ
 
 To contribute to this project, you may need to install RudderStack on your machine. You can do so by following our [**docs**](https://rudderstack.com/docs/get-started/installing-and-setting-up-rudderstack) and set up RudderStack in no time.
 
+## Offline startup regression tests
+
+Install .NET SDK 8, then run:
+
+```sh
+dotnet build tests/OfflineStartup/OfflineStartup.csproj --configuration Release -p:UnityApiCompatibility=true
+dotnet test tests/OfflineStartup/OfflineStartup.csproj --configuration Release
+```
+
+The suite compiles the SDK's actual client, request, queue, and persistence source
+against the checked-in `RudderAnalytics.dll` and `NodaTime.dll`. Unity platform APIs
+are replaced with small test shims. The tests use real encryption, files, and local
+HTTP endpoints. Deterministic HTTP-handler tests cover timeout/cancellation,
+response classification, and bounded retry timing. No live RudderStack credentials
+are required. Test files stay outside `Assets` and the exported Unity package.
+The compatibility build checks runtime sources against .NET Standard 2.1 using C# 8.
+
+These tests do not verify Unity coroutine scheduling or IL2CPP. Before release:
+
+1. Import the package into a clean Unity sample with the RudderStack prefab.
+2. Build an iOS IL2CPP player and launch it in airplane mode.
+3. Wait for `InitializeRoutine` to complete and track several events.
+4. Restore connectivity and verify delivery without restarting or reinitializing.
+5. Repeat with queued events from a previous offline launch.
+6. Verify coroutine and UniTask callers on Unity 2021.3.33f1 and the repository's
+   Unity 2022.3.16f1 baseline. Check Android for the shared initialization path.
+7. Record device/build details and confirm no duplicate workers or startup exception.
+
 ## Getting help
 
 For any questions, concerns, or queries, you can start by asking a question on our [**Slack**][Slack] channel.

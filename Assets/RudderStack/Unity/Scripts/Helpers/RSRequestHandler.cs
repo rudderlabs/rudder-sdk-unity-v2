@@ -18,7 +18,7 @@ using WebProxy = RudderStack.Request.WebProxy;
 
 namespace RudderStack.Unity
 {
-    public class RSRequestHandler : IRSRequestHandler
+    public class RSRequestHandler : IRSRequestHandler, IDisposable
     {
         public event Action<Batch, BatchResult> BatchCompleted;
 
@@ -402,5 +402,7 @@ namespace RudderStack.Unity
         {
             return Convert.ToBase64String(Encoding.UTF8.GetBytes($"{user}:{pass}"));
         }
+
+        public void Dispose() => _httpClient?.Dispose();
     }
 }

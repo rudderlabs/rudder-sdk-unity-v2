@@ -34,6 +34,10 @@
 ExportedObj/
 .consulo/
 *.csproj
+!tests/**/*.csproj
+tests/**/bin/
+tests/**/obj/
+tests/**/TestResults/
 *.unityproj
 *.sln
 *.suo
