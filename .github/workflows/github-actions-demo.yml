@@ -19,9 +19,8 @@ jobs:
 
     - uses: pCYSl5EDgo/create-unitypackage@77c5dcf43a204347b6ee3cac788817e70f1b7e56 # v1
       with:
-        package-path: '/tmp/output.unitypackage'
+        package-path: 'a/output.unitypackage'
         include-files: metaList
-    - run: cp /tmp/output.unitypackage a/output.unitypackage
     - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
       with:
         path: a
