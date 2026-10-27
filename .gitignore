@@ -79,3 +79,7 @@ crashlytics-build.properties
 .DS_Store
 RUDDER_ENV.json
 RUDDER_ENV.json.meta
+
+# Local package exports and Python test caches
+/artifacts/
+__pycache__/
